@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablero Reproductivo del Tambo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #00c853;
+    --amarillo: #ffd600;
+    --naranja: #ff6d00;
+    --rojo: #d50000;
+    --fondo: #0d1117;
+    --panel: #161b22;
+    --borde: #30363d;
+    --texto: #e6edf3;
+    --texto2: #8b949e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--fondo); color: var(--texto); font-family: 'IBM Plex Sans', sans-serif; min-height: 100vh; }
+
+  /* ---- HEADER ---- */
+  header { background: var(--panel); border-bottom: 1px solid var(--borde); padding: 20px 32px; display: flex; align-items: center; gap: 16px; }
+  header .logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--verde); }
+  header .subtitle { font-size: 12px; color: var(--texto2); text-transform: uppercase; letter-spacing: 1px; }
+  header .asesor { margin-left: auto; text-align: right; }
+  header .asesor-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1.5px; color: var(--texto); }
+  header .asesor-cargo { font-size: 11px; color: var(--texto2); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ---- NAV TABS ---- */
+  .tabs { background: var(--panel); border-bottom: 1px solid var(--borde); display: flex; padding: 0 32px; gap: 0; }
+  .tab { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 1.5px; color: var(--texto2); padding: 14px 22px; cursor: pointer; border-bottom: 3px solid transparent; transition: color .2s, border-color .2s; }
+  .tab:hover { color: var(--texto); }
+  .tab.active { color: var(--verde); border-bottom-color: var(--verde); }
+
+  /* ---- CONTAINER ---- */
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ---- NOTA FINAL ---- */
+  .nota-final { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 28px 32px; margin-bottom: 28px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+  .nota-circulo { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+  .nota-circulo svg { transform: rotate(-90deg); }
+  .nota-circulo .numero { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Bebas Neue', sans-serif; font-size: 38px; color: var(--verde); transition: color 0.4s; }
+  .nota-info h2 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; color: var(--texto2); margin-bottom: 4px; }
+  .nota-info .calificacion { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 1px; transition: color 0.4s; }
+  .nota-info .descripcion { font-size: 13px; color: var(--texto2); margin-top: 4px; max-width: 350px; }
+  .promedios-grid { display: flex; gap: 12px; flex-wrap: wrap; flex: 1; justify-content: flex-end; }
+  .promedio-chip { background: #0d1117; border: 1px solid var(--borde); border-radius: 8px; padding: 12px 16px; min-width: 130px; text-align: center; }
+  .promedio-chip .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--texto2); margin-bottom: 4px; }
+  .promedio-chip .valor { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; transition: color 0.3s; }
+
+  /* ---- SECCIONES TABLERO ---- */
+  .secciones-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }
+  .seccion { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; overflow: hidden; }
+  .seccion-header { padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--borde); }
+  .seccion-titulo { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1.5px; color: var(--texto2); }
+  .seccion-puntaje { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; transition: color 0.3s; }
+  .seccion-barra { height: 3px; width: 100%; background: var(--borde); }
+  .seccion-barra-fill { height: 100%; transition: width 0.5s ease, background 0.4s; background: var(--verde); }
+  .items-lista { padding: 8px 0; }
+  .item-row { display: flex; align-items: center; padding: 10px 20px; gap: 12px; border-bottom: 1px solid #1c2128; transition: background 0.15s; }
+  .item-row:last-child { border-bottom: none; }
+  .item-row:hover { background: #1c2128; }
+  .item-nombre { flex: 1; font-size: 13px; color: var(--texto); line-height: 1.3; }
+  .item-control { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .toggle-wrap { display: flex; background: #0d1117; border: 1px solid var(--borde); border-radius: 6px; overflow: hidden; }
+  .toggle-btn { padding: 5px 12px; font-size: 11px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--texto2); transition: background 0.2s, color 0.2s; letter-spacing: 0.5px; }
+  .toggle-btn.active-si { background: #003a1a; color: var(--verde); }
+  .toggle-btn.active-no { background: #3a0000; color: var(--rojo); }
+  .rango-select { background: #0d1117; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 5px 8px; cursor: pointer; outline: none; min-width: 80px; }
+  .rango-select:focus { border-color: var(--verde); }
+  .puntaje-badge { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; min-width: 32px; text-align: right; transition: color 0.3s; }
+
+  /* ---- REFERENCIA ---- */
+  .referencia { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .ref-label { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 1px; color: var(--texto2); }
+  .ref-barra { flex: 1; min-width: 200px; display: flex; height: 10px; border-radius: 5px; overflow: hidden; }
+  .ref-seg { flex: 1; }
+  .ref-items { display: flex; gap: 16px; flex-wrap: wrap; }
+  .ref-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--texto2); }
+  .ref-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ---- BOTONES ---- */
+  .botones-fila { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 20px; }
+  .reset-btn { background: transparent; border: 1px solid var(--borde); color: var(--texto2); font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: border-color 0.2s, color 0.2s; letter-spacing: 0.5px; }
+  .reset-btn:hover { border-color: var(--texto2); color: var(--texto); }
+  .print-btn { background: #003a1a; border: 1px solid var(--verde); color: var(--verde); font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.5px; }
+  .print-btn:hover { background: var(--verde); color: #000; }
+
+  /* ---- PANEL 1 / 2 CALCULADORAS ---- */
+  .calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+  .calc-card { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; overflow: hidden; }
+  .calc-card-header { padding: 14px 20px; border-bottom: 1px solid var(--borde); }
+  .calc-card-titulo { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1.5px; color: var(--texto2); }
+  .c-row { display: flex; align-items: center; padding: 10px 20px; gap: 12px; border-bottom: 1px solid #1c2128; transition: background .15s; }
+  .c-row:last-child { border-bottom: none; }
+  .c-row:hover { background: #1c2128; }
+  .c-row label { flex: 1; font-size: 13px; color: var(--texto); }
+  .c-row input[type=number] { background: #0d1117; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; padding: 5px 10px; width: 90px; text-align: right; outline: none; }
+  .c-row input:focus { border-color: var(--verde); }
+  .c-row .unit { font-size: 11px; color: var(--texto2); min-width: 28px; font-family: 'IBM Plex Mono', monospace; }
+  .c-row input[type=range] { flex: 1; accent-color: var(--verde); }
+  .sval { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; min-width: 52px; text-align: right; transition: color .3s; }
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-top: 20px; }
+  .rcard { background: var(--panel); border: 1px solid var(--borde); border-radius: 10px; padding: 14px 16px; }
+  .rcard .rlbl { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--texto2); margin-bottom: 6px; }
+  .rcard .rval { font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 600; transition: color .3s; color: var(--verde); }
+  .rcard.hi .rval { font-size: 28px; }
+  .barra-wrap { height: 3px; background: var(--borde); border-radius: 2px; margin: 0 20px 0; }
+  .barra-fill { height: 100%; border-radius: 2px; transition: width .5s ease, background .4s; }
+  .result-row-inline { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid #1c2128; }
+  .result-row-inline:last-child { border-bottom: none; }
+  .result-row-inline .rlbl2 { font-size: 13px; color: var(--texto2); }
+  .result-row-inline .rval2 { font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; transition: color .3s; }
+  .sec-sep { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 1.5px; color: var(--texto2); margin: 0 0 12px; }
+
+  /* tabla ciclos */
+  .ciclos-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .ciclos-table th { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 1px; color: var(--texto2); padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--borde); }
+  .ciclos-table th:first-child { text-align: left; }
+  .ciclos-table td { padding: 8px 12px; text-align: right; border-bottom: 1px solid #1c2128; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .ciclos-table td:first-child { text-align: left; font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: var(--verde); letter-spacing: 1px; }
+  .ciclos-table tr.disabled td { color: #3a3a3a !important; }
+  .ciclos-table tr.disabled td:first-child { color: #3a3a3a !important; }
+  .ciclos-table tr:last-child td { border-bottom: none; }
+  .hab-si { color: var(--verde) !important; font-weight: 600; }
+  .hab-no { color: #3a3a3a !important; }
+
+  /* ---- PRINT ---- */
+  .panel-print-btn { background: #003a1a; border: 1px solid var(--verde); color: var(--verde); font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: background 0.2s, color 0.2s; letter-spacing: 0.5px; }
+  .panel-print-btn:hover { background: var(--verde); color: #000; }
+  @media print {
+    body { background: #fff !important; color: #000 !important; }
+    header { background: #fff !important; border-bottom: 2px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    header .logo { color: #1a7a3a !important; }
+    .tabs { display: none !important; }
+    .no-print { display: none !important; }
+    .tab-content { display: block !important; }
+    .container { padding: 16px !important; }
+    .nota-final, .referencia, .promedio-chip, .calc-card, .rcard { background: #f5f5f5 !important; border: 1px solid #ccc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .secciones-grid { display: none !important; }
+    .print-footer { display: block !important; text-align: center; font-size: 11px; color: #888; margin-top: 24px; border-top: 1px solid #ccc; padding-top: 10px; }
+  }
+  .print-footer { display: none; }
+  @media (max-width: 600px) {
+    .container { padding: 16px; }
+    .secciones-grid, .calc-grid { grid-template-columns: 1fr; }
+    .promedios-grid { justify-content: flex-start; }
+    .tabs { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+<!-- ========== PANTALLA DE ACCESO ========== -->
+<div id="login-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0d1117;z-index:9999;display:flex;align-items:center;justify-content:center;">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;padding:48px 40px;width:360px;text-align:center;box-shadow:0 8px 32px #000a;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:3px;color:#00c853;margin-bottom:4px;">🐄 TABLERO</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#8b949e;margin-bottom:28px;">REPRODUCTIVO DEL TAMBO</div>
+    <div style="font-size:13px;color:#e6edf3;font-family:'IBM Plex Sans',sans-serif;margin-bottom:4px;font-weight:600;">Dr. Rodolfo Murray</div>
+    <div style="font-size:11px;color:#8b949e;margin-bottom:28px;font-family:'IBM Plex Sans',sans-serif;">Asesor en Producción de Leche</div>
+    <input id="pwd-input" type="password" placeholder="••••••••••"
+      style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#e6edf3;font-family:'IBM Plex Mono',monospace;font-size:16px;padding:12px 16px;outline:none;text-align:center;letter-spacing:4px;margin-bottom:10px;transition:border-color .2s;"
+      onfocus="this.style.borderColor='#00c853'" onblur="this.style.borderColor='#30363d'"
+      onkeydown="if(event.key==='Enter') checkPwd()">
+    <div id="pwd-error" style="color:#d50000;font-size:12px;margin-bottom:10px;min-height:16px;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;"></div>
+    <button onclick="checkPwd()"
+      style="width:100%;background:#003a1a;border:1px solid #00c853;color:#00c853;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;padding:13px;border-radius:8px;cursor:pointer;transition:background .2s,color .2s;"
+      onmouseover="this.style.background='#00c853';this.style.color='#000'"
+      onmouseout="this.style.background='#003a1a';this.style.color='#00c853'">
+      INGRESAR
+    </button>
+    <div style="margin-top:28px;font-size:10px;color:#3a3a3a;font-family:'IBM Plex Sans',sans-serif;">© Dr. Rodolfo Murray — Todos los derechos reservados</div>
+  </div>
+</div>
+<script>
+var _k = "Um9kb2xmbzIwMjQ=";
+function checkPwd() {
+  var v = document.getElementById('pwd-input').value;
+  if (btoa(v) === _k) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('pwd-input').value = '';
+  } else {
+    var err = document.getElementById('pwd-error');
+    err.textContent = '✕ Contraseña incorrecta';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+    setTimeout(function(){ err.textContent = ''; }, 2500);
+  }
+}
+window.addEventListener('load', function(){ document.getElementById('pwd-input').focus(); });
+</script>
+
+
+<header>
+  <div>
+    <div class="logo">🐄 TABLERO REPRODUCTIVO</div>
+    <div class="subtitle">Diagnóstico de manejo reproductivo del tambo</div>
+  </div>
+  <div class="asesor">
+    <div class="asesor-nombre">Dr. Rodolfo Murray</div>
+    <div class="asesor-cargo">Asesor en Producción de Leche</div>
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs no-print">
+  <div class="tab active" onclick="showTab('tablero', this)">TABLERO REPRODUCTIVO</div>
+  <div class="tab" onclick="showTab('panel1', this)">PANEL 1 — PREÑECES</div>
+  <div class="tab" onclick="showTab('panel2', this)">PANEL 2 — TASAS E IPP</div>
+</div>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- TAB 1: TABLERO                                               -->
+<!-- ============================================================ -->
+<div id="tab-tablero" class="tab-content active">
+
+  <div class="nota-final">
+    <div class="nota-circulo">
+      <svg width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#1c2128" stroke-width="10"/>
+        <circle id="arco-circulo" cx="60" cy="60" r="52" fill="none" stroke="#00c853" stroke-width="10"
+          stroke-dasharray="327" stroke-dashoffset="327" style="transition:stroke-dashoffset .6s ease,stroke .4s"/>
+      </svg>
+      <div class="numero" id="nota-numero">0.0</div>
+    </div>
+    <div class="nota-info">
+      <h2>NOTA REPRODUCTIVA GENERAL</h2>
+      <div class="calificacion" id="calificacion-texto" style="color:var(--texto2)">— CARGANDO —</div>
+      <div class="descripcion" id="calificacion-desc">Complete el tablero para obtener el diagnóstico.</div>
+    </div>
+    <div class="promedios-grid" id="promedios-chips"></div>
+  </div>
+
+  <div class="referencia">
+    <div class="ref-label">ESCALA</div>
+    <div class="ref-barra">
+      <div class="ref-seg" style="background:#d50000"></div>
+      <div class="ref-seg" style="background:#ff6d00"></div>
+      <div class="ref-seg" style="background:#ffd600"></div>
+      <div class="ref-seg" style="background:#00c853"></div>
+    </div>
+    <div class="ref-items">
+      <div class="ref-item"><div class="ref-dot" style="background:#d50000"></div>0–4 Crítico</div>
+      <div class="ref-item"><div class="ref-dot" style="background:#ff6d00"></div>4–6 Regular</div>
+      <div class="ref-item"><div class="ref-dot" style="background:#ffd600"></div>6–8 Bueno</div>
+      <div class="ref-item"><div class="ref-dot" style="background:#00c853"></div>8–10 Excelente</div>
+    </div>
+  </div>
+
+  <div class="botones-fila no-print">
+    <button class="reset-btn" onclick="resetear()">↺ REINICIAR TABLERO</button>
+    <button class="print-btn" onclick="window.print()">🖨 IMPRIMIR RESUMEN</button>
+  </div>
+
+  <div class="secciones-grid" id="secciones-grid"></div>
+
+  <div class="print-footer">
+    Dr. Rodolfo Murray — Asesor en Producción de Leche &nbsp;|&nbsp; Tablero de Diagnóstico Reproductivo del Tambo
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 2: PANEL 1                                               -->
+<!-- ============================================================ -->
+<div id="tab-panel1" class="tab-content">
+  <div class="calc-grid">
+    <!-- Inputs -->
+    <div class="calc-card">
+      <div class="calc-card-header"><div class="calc-card-titulo">Datos del tambo</div></div>
+      <div class="c-row"><label>Total vacas en ordeñe</label><input type="number" id="p1_vacas" value="200" min="1" step="1"><span class="unit">cab.</span></div>
+      <div class="c-row"><label>Tasa de concepción vaquillas</label><input type="number" id="p1_tcv" value="80" min="1" max="100" step="0.1"><span class="unit">%</span></div>
+      <div class="c-row"><label>% descarte anual</label><input type="number" id="p1_desc" value="25" min="0" max="100" step="0.1"><span class="unit">%</span></div>
+      <div class="c-row"><label>% abortos anual</label><input type="number" id="p1_abort" value="5" min="0" max="100" step="0.1"><span class="unit">%</span></div>
+      <div class="c-row"><label>N° de tactos por año</label><input type="number" id="p1_tactos" value="18" min="1" step="1"></div>
+    </div>
+    <!-- Rodeo -->
+    <div>
+      <div style="margin-bottom:20px">
+        <div class="sec-sep">Composición del rodeo</div>
+        <div class="calc-grid" style="gap:12px">
+          <div class="rcard"><div class="rlbl">Vacas que quedan</div><div class="rval" id="p1_quedan">—</div></div>
+          <div class="rcard"><div class="rlbl">A reemplazar / año</div><div class="rval" id="p1_reemplazar">—</div></div>
+          <div class="rcard"><div class="rlbl">% preñadas por mes</div><div class="rval" id="p1_pct">—</div></div>
+        </div>
+      </div>
+      <div class="sec-sep">Preñeces necesarias</div>
+      <div class="calc-card">
+        <div style="padding:14px 20px 10px; display:flex; justify-content:space-between; align-items:center">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:var(--texto2)">PREÑECES TOTALES / MES</span>
+          <span id="p1_total" style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:600;color:var(--verde);transition:color .3s">—</span>
+        </div>
+        <div class="barra-wrap" style="margin-bottom:4px"><div class="barra-fill" id="p1_barra" style="width:0%"></div></div>
+        <div class="result-row-inline"><span class="rlbl2">De vacas / mes</span><span class="rval2" id="p1_vac" style="color:var(--verde)">—</span></div>
+        <div class="result-row-inline"><span class="rlbl2">De vaquillas / mes</span><span class="rval2" id="p1_vaq" style="color:var(--verde)">—</span></div>
+      </div>
+    </div>
+  </div><!-- /calc-grid panel1 -->
+  <div style="display:flex;justify-content:flex-end;margin-top:20px">
+    <button class="panel-print-btn" onclick="imprimirPanel('panel1')">🖨 IMPRIMIR PANEL 1</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 3: PANEL 2                                               -->
+<!-- ============================================================ -->
+<div id="tab-panel2" class="tab-content">
+  <div class="calc-grid">
+    <!-- Inputs Panel 2 -->
+    <div>
+      <div class="calc-card" style="margin-bottom:20px">
+        <div class="calc-card-header"><div class="calc-card-titulo">Parámetros reproductivos</div></div>
+        <div class="c-row"><label>Vacas en ordeñe</label><input type="number" id="p2_vacas" value="200" min="1" step="1"><span class="unit">cab.</span></div>
+        <div class="c-row"><label>% descarte anual</label><input type="number" id="p2_desc" value="25" min="0" max="100" step="0.1"><span class="unit">%</span></div>
+      <div class="c-row" style="background:#1c2128"><label style="font-weight:600">Vacas a reemplazar <span style="font-size:10px;color:var(--texto2);font-weight:400">(ordeñe × descarte)</span></label><span id="p2_reemplazar" style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--verde);min-width:90px;text-align:right">—</span><span class="unit">cab.</span></div>
+        <div class="c-row"><label>Tasa detección de celo</label>
+          <input type="range" id="p2_det" min="10" max="100" step="1" value="60">
+          <span class="sval" id="sv_det" style="color:var(--verde)">60%</span>
+        </div>
+        <div class="c-row"><label>Tasa de concepción</label>
+          <input type="range" id="p2_conc" min="10" max="80" step="1" value="35">
+          <span class="sval" id="sv_conc" style="color:var(--verde)">35%</span>
+        </div>
+        <div class="c-row"><label>Inicio IA (meses post-parto)</label>
+          <input type="range" id="p2_inicio" min="1" max="6" step="1" value="2">
+          <span class="sval" id="sv_inicio" style="color:var(--amarillo)">2 m.</span>
+        </div>
+        <div class="c-row"><label>Habilita hasta ciclo n°</label>
+          <input type="range" id="p2_hab" min="1" max="9" step="1" value="3">
+          <span class="sval" id="sv_hab" style="color:var(--amarillo)">3°</span>
+        </div>
+      </div>
+      <!-- Resultados clave -->
+      <div class="calc-grid" style="gap:12px">
+        <div class="rcard hi"><div class="rlbl">Tasa de preñez / ciclo</div><div class="rval" id="p2_tp">—</div></div>
+        <div class="rcard hi"><div class="rlbl">IPP promedio logrado (meses)</div><div class="rval" id="p2_ipp">—</div></div>
+        <div class="rcard"><div class="rlbl">Ciclos necesarios</div><div class="rval" id="p2_ciclos">—</div></div>
+        <div class="rcard"><div class="rlbl">Total servicios</div><div class="rval" id="p2_srv">—</div></div>
+      </div>
+    </div>
+    <!-- Tabla ciclos -->
+    <div class="calc-card">
+      <div class="calc-card-header"><div class="calc-card-titulo">Detalle por ciclo</div></div>
+      <div style="overflow-x:auto">
+        <table class="ciclos-table">
+          <thead>
+            <tr>
+              <th>Ciclo</th>
+              <th>Días paridas</th>
+              <th>Se preñan</th>
+              <th>Quedan</th>
+              <th>IPP</th>
+              <th>Hab.</th>
+            </tr>
+          </thead>
+          <tbody id="p2_tabla"></tbody>
+        </table>
+      </div>
+      <!-- Total preñadas (suma columna Se preñan habilitadas) -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--borde);margin-top:4px">
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:var(--texto2)">TOTAL PREÑADAS (ciclos habilitados)</span>
+        <span id="p2_total_prenan" style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--verde)">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECCIÓN MORTANDAD Y BALANCE ── -->
+  <div style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px">
+
+    <!-- Parámetros de mortandad -->
+    <div class="calc-card">
+      <div class="calc-card-header"><div class="calc-card-titulo">Mortandad de hembras</div></div>
+      <div class="c-row"><label>% hembras nacidas por año</label><input type="number" id="p2_hembras" value="50" min="1" max="100" step="0.1"><span class="unit">%</span></div>
+      <div class="c-row"><label>% muertas al parto</label><input type="number" id="p2_m_parto" value="3" min="0" max="100" step="0.1"><span class="unit">%</span></div>
+      <div class="c-row"><label>% muertas en crianza</label><input type="number" id="p2_m_crianza" value="5" min="0" max="100" step="0.1"><span class="unit">%</span></div>
+      <div class="c-row"><label>% muertas en recría</label><input type="number" id="p2_m_recria" value="3" min="0" max="100" step="0.1"><span class="unit">%</span></div>
+    </div>
+
+    <!-- Balance final -->
+    <div class="calc-card">
+      <div class="calc-card-header"><div class="calc-card-titulo">Balance de reposición</div></div>
+      <div class="result-row-inline">
+        <span class="rlbl2">Total preñadas (ciclos habilitados)</span>
+        <span class="rval2" id="b_total_prenan" style="color:var(--verde)">—</span>
+      </div>
+      <div class="result-row-inline">
+        <span class="rlbl2">Hembras nacidas (×% hembras)</span>
+        <span class="rval2" id="b_hembras_nac" style="color:var(--verde)">—</span>
+      </div>
+      <div class="result-row-inline">
+        <span class="rlbl2">Después de muertas al parto</span>
+        <span class="rval2" id="b_post_parto" style="color:var(--amarillo)">—</span>
+      </div>
+      <div class="result-row-inline">
+        <span class="rlbl2">Después de muertas en crianza</span>
+        <span class="rval2" id="b_post_crianza" style="color:var(--amarillo)">—</span>
+      </div>
+      <div class="result-row-inline">
+        <span class="rlbl2">Después de muertas en recría</span>
+        <span class="rval2" id="b_post_recria" style="color:var(--naranja)">—</span>
+      </div>
+      <div style="padding:14px 20px;border-top:1px solid var(--borde);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:var(--texto2)">HEMBRAS DISPONIBLES / AÑO</span>
+        <span id="b_disponibles" style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;transition:color .3s;color:var(--verde)">—</span>
+      </div>
+      <div style="height:3px;background:var(--borde)"><div id="b_barra" style="height:100%;border-radius:2px;background:var(--verde);transition:width .5s,background .4s;width:0%"></div></div>
+      <div style="padding:14px 20px;border-top:1px solid var(--borde)">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--texto2);margin-bottom:6px">Hembras a reemplazar / año <span style="font-size:9px">(Panel 1 — A reemplazar)</span></div>
+        <div id="b_necesarias" style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--amarillo)">—</div>
+      </div>
+      <div style="padding:10px 20px 14px;display:flex;justify-content:space-between;align-items:center;background:#1c2128">
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:var(--texto2)">BALANCE (disponibles − a reemplazar)</span>
+        <span id="b_balance" style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;transition:color .3s">—</span>
+      </div>
+    </div>
+
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:20px">
+    <button class="panel-print-btn" onclick="imprimirPanel('panel2')">🖨 IMPRIMIR PANEL 2</button>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ===================== TABS =====================
+function showTab(name, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ===================== TABLERO =====================
+const SECCIONES = [
+  { id:'preparto', titulo:'PRE PARTO', items:[
+    {nombre:'Separa las vacas 30 días antes del parto',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Da sales aniónicas',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Da dieta especial a las vacas en pre parto',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Controla el pH de la orina',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Controla el estado corporal de las vacas',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Usa autoinmunoterapia',tipo:'sino',puntaje_si:10,puntaje_no:0},
+  ]},
+  { id:'postparto', titulo:'POST PARTO — ALTA', items:[
+    {nombre:'Control post parto (días desde el parto a la primera revisión)',tipo:'rango',opciones:[
+      {label:'0-10 días',valor:4},{label:'11-20 días',valor:5},{label:'11-15 días',valor:6},
+      {label:'15-25 días',valor:10},{label:'Más de 30 días',valor:2},{label:'20 días',valor:10},
+      {label:'25 días',valor:10},{label:'30 días',valor:10},{label:'35 días',valor:10},
+      {label:'40 días',valor:5},{label:'50 días',valor:4},{label:'60 días',valor:3},
+      {label:'70 días',valor:2},{label:'+70 días',valor:1},
+    ]},
+  ]},
+  { id:'inf_uterinas', titulo:'DIAGNÓSTICO INF. UTERINAS', items:[
+    {nombre:'Diagnóstica la salud post parto — Metritis',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Diagnóstica la salud post parto — Endometritis',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Diagnóstica la salud post parto — Aspecto de los flujos',tipo:'rango',opciones:[
+      {label:'Aspecto flujos',valor:10},{label:'Otros medios',valor:5},{label:'No hace nada',valor:0},
+    ]},
+  ]},
+  { id:'tratamientos', titulo:'TRATAMIENTOS', items:[
+    {nombre:'Tipo de tratamiento aplicado',tipo:'rango',opciones:[
+      {label:'Intramuscular',valor:6},{label:'Intrauterino',valor:10},
+    ]},
+  ]},
+  { id:'serv_detcelos', titulo:'DETECCIÓN DE CELOS', items:[
+    {nombre:'Ayudas para detectar celos',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Pinturas para detec. celos / Parches',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Usa métodos de sincronización de celos',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Ayuda para aumentar la fert. (masaje clítoris, GnRH, implantes de progest., etc.)',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Anota hora de detección y hora de IA',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Toma la temperatura al momento de inseminar',tipo:'sino',puntaje_si:10,puntaje_no:0},
+  ]},
+  { id:'det_preniez', titulo:'DETECCIÓN DE PREÑEZ', items:[
+    {nombre:'Cuándo detecta la preñez (días post-servicio)',tipo:'rango',opciones:[
+      {label:'30 días',valor:10},{label:'35 días',valor:10},{label:'40 días',valor:10},
+      {label:'45 días',valor:10},{label:'50 días',valor:10},{label:'55 días',valor:10},
+      {label:'60 días',valor:8},{label:'65 días',valor:7},{label:'70 días',valor:5},{label:'+70 días',valor:4},
+    ]},
+  ]},
+  { id:'alim_control', titulo:'CONTROL ALIMENTACIÓN ETAPAS REPRODUCTIVAS', items:[
+    {nombre:'Controla la materia fecal',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Controla betahidroxibutirato',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Análisis de sangre para función hepática',tipo:'sino',puntaje_si:10,puntaje_no:0},
+  ]},
+  { id:'evaluacion', titulo:'EVALUACIÓN', items:[
+    {nombre:'Evaluación inseminación',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Evaluación del inseminador',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Evaluación de la detección de celos',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Proyección de las vacas en ordeñe',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Cálculo de las vacas preñadas por tacto',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Evaluación de la fertilidad de los toros',tipo:'sino',puntaje_si:10,puntaje_no:0},
+  ]},
+  { id:'seguimiento', titulo:'SEGUIMIENTO VACAS VACÍAS / SIN SERVICIO', items:[
+    {nombre:'Seguimiento de las vacas vacías y sin servicio',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Tacta regularmente las vacas sin servicio',tipo:'sino',puntaje_si:10,puntaje_no:0},
+    {nombre:'Controla las vacías de servicios anteriores',tipo:'sino',puntaje_si:10,puntaje_no:0},
+  ]},
+];
+
+const CHIP_DEFS = [
+  {id:'preparto',label:'PRE PARTO'},{id:'postparto',label:'POST PARTO'},
+  {id:'inf_uterinas',label:'INF. UTERINAS'},{id:'tratamientos',label:'TRATAMIENTOS'},
+  {id:'serv_detcelos',label:'DET. CELOS'},{id:'det_preniez',label:'DET. PREÑEZ'},
+  {id:'alim_control',label:'ALIMENTACIÓN'},{id:'evaluacion',label:'EVALUACIÓN'},
+  {id:'seguimiento',label:'SEGUIMIENTO'},
+];
+
+const estado = {};
+
+function getColor(val) {
+  if (val >= 8) return 'var(--verde)';
+  if (val >= 6) return 'var(--amarillo)';
+  if (val >= 4) return 'var(--naranja)';
+  return 'var(--rojo)';
+}
+function getCalificacion(val) {
+  if (val >= 8) return ['EXCELENTE','Manejo reproductivo sobresaliente. ¡Seguir así!'];
+  if (val >= 6) return ['BUENO','Manejo correcto con oportunidades de mejora.'];
+  if (val >= 4) return ['REGULAR','Se detectaron problemas que requieren atención.'];
+  return ['CRÍTICO','Manejo reproductivo deficiente. Revisión urgente recomendada.'];
+}
+function calcularPromedio(seccionId) {
+  const sec = SECCIONES.find(s => s.id === seccionId);
+  if (!sec) return 0;
+  const puntos = sec.items.map((item, i) => { const k = `${seccionId}_${i}`; return estado[k] !== undefined ? estado[k] : 0; });
+  return puntos.length === 0 ? 0 : puntos.reduce((a,b) => a+b, 0) / puntos.length;
+}
+function calcularNotaGeneral() {
+  const promedios = SECCIONES.map(s => calcularPromedio(s.id));
+  return promedios.reduce((a,b) => a+b, 0) / promedios.length;
+}
+function actualizarUI() {
+  SECCIONES.forEach(sec => {
+    sec.items.forEach((item, i) => {
+      const key = `${sec.id}_${i}`;
+      const badge = document.getElementById(`badge_${key}`);
+      if (badge) { const val = estado[key] !== undefined ? estado[key] : 0; badge.textContent = val.toFixed(0); badge.style.color = getColor(val); }
+    });
+    const prom = calcularPromedio(sec.id);
+    const promEl = document.getElementById(`prom_${sec.id}`);
+    if (promEl) { promEl.textContent = prom.toFixed(1); promEl.style.color = getColor(prom); }
+    const barraEl = document.getElementById(`barra_${sec.id}`);
+    if (barraEl) { barraEl.style.width = `${prom * 10}%`; barraEl.style.background = getColor(prom); }
+  });
+  const nota = calcularNotaGeneral();
+  document.getElementById('nota-numero').textContent = nota.toFixed(1);
+  document.getElementById('nota-numero').style.color = getColor(nota);
+  const circum = 2 * Math.PI * 52;
+  const arco = document.getElementById('arco-circulo');
+  arco.style.strokeDasharray = circum;
+  arco.style.strokeDashoffset = circum - (circum * nota / 10);
+  arco.style.stroke = getColor(nota);
+  const [cal, desc] = getCalificacion(nota);
+  const calEl = document.getElementById('calificacion-texto');
+  calEl.textContent = cal; calEl.style.color = getColor(nota);
+  document.getElementById('calificacion-desc').textContent = desc;
+  CHIP_DEFS.forEach(chip => {
+    const el = document.getElementById(`chip_${chip.id}`);
+    if (el) { const prom = calcularPromedio(chip.id); el.textContent = prom.toFixed(1); el.style.color = getColor(prom); }
+  });
+}
+function setSiNo(key, val) {
+  estado[key] = val;
+  const btnSi = document.getElementById(`si_${key}`);
+  const btnNo = document.getElementById(`no_${key}`);
+  if (val > 0) { btnSi.classList.add('active-si'); btnNo.classList.remove('active-no'); }
+  else { btnNo.classList.add('active-no'); btnSi.classList.remove('active-si'); }
+  actualizarUI();
+}
+function setRango(key, val) { estado[key] = parseFloat(val); actualizarUI(); }
+function resetear() {
+  Object.keys(estado).forEach(k => delete estado[k]);
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-si','active-no'));
+  document.querySelectorAll('.rango-select').forEach(s => s.selectedIndex = 0);
+  actualizarUI();
+}
+function renderSecciones() {
+  const grid = document.getElementById('secciones-grid');
+  SECCIONES.forEach(sec => {
+    const div = document.createElement('div');
+    div.className = 'seccion';
+    div.innerHTML = `<div class="seccion-header"><div class="seccion-titulo">${sec.titulo}</div><div class="seccion-puntaje" id="prom_${sec.id}">0.0</div></div><div class="seccion-barra"><div class="seccion-barra-fill" id="barra_${sec.id}" style="width:0%"></div></div><div class="items-lista" id="lista_${sec.id}"></div>`;
+    grid.appendChild(div);
+    const lista = document.getElementById(`lista_${sec.id}`);
+    sec.items.forEach((item, i) => {
+      const key = `${sec.id}_${i}`;
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      let control = '';
+      if (item.tipo === 'sino') {
+        control = `<div class="item-control"><div class="toggle-wrap"><button class="toggle-btn" id="si_${key}" onclick="setSiNo('${key}',${item.puntaje_si})">SI</button><button class="toggle-btn" id="no_${key}" onclick="setSiNo('${key}',${item.puntaje_no})">NO</button></div><div class="puntaje-badge" id="badge_${key}" style="color:var(--texto2)">0</div></div>`;
+      } else if (item.tipo === 'rango') {
+        const opts = item.opciones.map(o => `<option value="${o.valor}">${o.label} (${o.valor} pts)</option>`).join('');
+        control = `<div class="item-control"><select class="rango-select" onchange="setRango('${key}',this.value)"><option value="0">— Seleccionar —</option>${opts}</select><div class="puntaje-badge" id="badge_${key}" style="color:var(--texto2)">0</div></div>`;
+      }
+      row.innerHTML = `<div class="item-nombre">${item.nombre}</div>${control}`;
+      lista.appendChild(row);
+    });
+  });
+}
+function renderChips() {
+  const container = document.getElementById('promedios-chips');
+  CHIP_DEFS.forEach(chip => {
+    const div = document.createElement('div');
+    div.className = 'promedio-chip';
+    div.innerHTML = `<div class="label">${chip.label}</div><div class="valor" id="chip_${chip.id}" style="color:var(--texto2)">0.0</div>`;
+    container.appendChild(div);
+  });
+}
+renderSecciones(); renderChips(); actualizarUI();
+
+// ===================== PANEL 1 =====================
+function g(id) { return document.getElementById(id); }
+function colorP(v) { if(v>=70) return 'var(--verde)'; if(v>=50) return 'var(--amarillo)'; if(v>=30) return 'var(--naranja)'; return 'var(--rojo)'; }
+
+function calcP1() {
+  const vacas = +g('p1_vacas').value||0;
+  const tcv = (+g('p1_tcv').value||0)/100;
+  const desc = (+g('p1_desc').value||0)/100;
+  const abort = (+g('p1_abort').value||0)/100;
+  const tactos = +g('p1_tactos').value||1;
+  const quedan = Math.round(vacas*(1-desc));
+  const reemplazar = Math.round(vacas*desc);
+  const pct_mes = (1/tactos)+desc/12+abort/12;
+  const prenc_total = vacas*pct_mes;
+  const prenc_vac = prenc_total*(vacas/(vacas+reemplazar||1));
+  const prenc_vaq = reemplazar/12;
+  const c = colorP(pct_mes*100*3);
+  g('p1_quedan').textContent = quedan+' cab.';
+  g('p1_reemplazar').textContent = reemplazar+' cab.';
+  g('p1_pct').textContent = (pct_mes*100).toFixed(2)+'%';
+  g('p1_total').textContent = prenc_total.toFixed(2); g('p1_total').style.color = c;
+  g('p1_barra').style.width = Math.min(prenc_total/vacas*100*5,100)+'%'; g('p1_barra').style.background = c;
+  g('p1_vac').textContent = prenc_vac.toFixed(2); g('p1_vac').style.color = c;
+  g('p1_vaq').textContent = prenc_vaq.toFixed(2); g('p1_vaq').style.color = c;
+  // sync to Panel 2
+  g('p2_vacas').value = vacas; g('p2_desc').value = Math.round(desc*100);
+  calcP2();
+}
+['p1_vacas','p1_tcv','p1_desc','p1_abort','p1_tactos'].forEach(id => g(id).addEventListener('input', calcP1));
+
+// ===================== PANEL 2 =====================
+function calcP2() {
+  const vacas = +g('p2_vacas').value||0;
+  const desc = (+g('p2_desc').value||0)/100;
+  const reemplazar = Math.round(vacas*desc);
+  const det = +g('p2_det').value/100;
+  const conc = +g('p2_conc').value/100;
+  const inicio = +g('p2_inicio').value;
+  const hab = +g('p2_hab').value;
+  const tp = det*conc;
+
+  g('sv_det').textContent = g('p2_det').value+'%';
+  g('sv_conc').textContent = g('p2_conc').value+'%';
+  g('sv_inicio').textContent = g('p2_inicio').value+' m.';
+  g('sv_hab').textContent = g('p2_hab').value+'°';
+
+  const colorTp = tp>=0.20 ? 'var(--verde)' : tp>=0.14 ? 'var(--amarillo)' : tp>=0.08 ? 'var(--naranja)' : 'var(--rojo)';
+  g('p2_tp').textContent = (tp*100).toFixed(1)+'%'; g('p2_tp').style.color = colorTp;
+  g('p2_ciclos').textContent = tp>0 ? (1/tp).toFixed(2) : '—';
+
+  const vac_reemplazar = vacas * desc;
+  g('p2_reemplazar').textContent = vac_reemplazar.toFixed(1);
+
+  let sum_ipp=0, sum_prenan=0;
+  let tbody = '';
+  let quedan_acum = vacas - vac_reemplazar;
+  for(let c=1; c<=9; c++) {
+    const dias_paridas = (inicio+(c-1))*30;
+    const se_prenan = quedan_acum * tp;
+    const quedan_nuevo = quedan_acum - se_prenan;
+    const ipp = dias_paridas+30;
+    const habilitado = c<=hab;
+    if(habilitado){ sum_ipp+=se_prenan*ipp; sum_prenan+=se_prenan; }
+    const rowClass = habilitado ? '' : ' class="disabled"';
+    const habCell = habilitado ? '<span class="hab-si">SI</span>' : '<span class="hab-no">no</span>';
+    tbody += `<tr${rowClass}><td>${c}°</td><td>${dias_paridas}</td><td>${se_prenan.toFixed(1)}</td><td>${quedan_nuevo.toFixed(1)}</td><td>${ipp}</td><td>${habCell}</td></tr>`;
+    quedan_acum = quedan_nuevo;
+  }
+  g('p2_tabla').innerHTML = tbody;
+
+  const ipp_prom = sum_prenan>0 ? sum_ipp/sum_prenan : 0;
+  const ipp_meses = (ipp_prom + 287) / 30;
+  const srv_tot = sum_prenan>0 ? sum_prenan/tp : 0;
+  const colorIpp = ipp_meses<=12.7 ? 'var(--verde)' : ipp_meses<=13.7 ? 'var(--amarillo)' : ipp_meses<=15 ? 'var(--naranja)' : 'var(--rojo)';
+  g('p2_ipp').textContent = ipp_meses.toFixed(1)+' m'; g('p2_ipp').style.color = colorIpp;
+  g('p2_srv').textContent = srv_tot.toFixed(1);
+
+  // Total preñadas habilitadas
+  g('p2_total_prenan').textContent = sum_prenan.toFixed(1);
+  g('b_total_prenan').textContent = sum_prenan.toFixed(1);
+  calcBalance();
+}
+['p2_vacas','p2_desc'].forEach(id => g(id).addEventListener('input', calcP2));
+['p2_det','p2_conc','p2_inicio','p2_hab'].forEach(id => g(id).addEventListener('input', calcP2));
+
+// ===================== BALANCE MORTANDAD =====================
+function calcBalance() {
+  const pct_hembras = (+g('p2_hembras').value||0)/100;
+  const m_parto   = (+g('p2_m_parto').value||0)/100;
+  const m_crianza = (+g('p2_m_crianza').value||0)/100;
+  const m_recria  = (+g('p2_m_recria').value||0)/100;
+  const total_prenan = parseFloat(g('p2_total_prenan').textContent)||0;
+
+  const hembras_nac   = total_prenan * pct_hembras;
+  const post_parto    = hembras_nac  * (1 - m_parto);
+  const post_crianza  = post_parto   * (1 - m_crianza);
+  const post_recria   = post_crianza * (1 - m_recria);
+
+  // Hembras a reemplazar: viene del Panel 1
+  const necesarias = parseFloat(g('p1_reemplazar').textContent)||0;
+
+  const balance = post_recria - necesarias;
+  const colorBal = balance >= 0 ? 'var(--verde)' : 'var(--rojo)';
+  const colorDisp = post_recria >= necesarias ? 'var(--verde)' : 'var(--naranja)';
+
+  g('b_hembras_nac').textContent  = hembras_nac.toFixed(1);
+  g('b_post_parto').textContent   = post_parto.toFixed(1);
+  g('b_post_crianza').textContent = post_crianza.toFixed(1);
+  g('b_post_recria').textContent  = post_recria.toFixed(1);
+  g('b_disponibles').textContent  = post_recria.toFixed(1);
+  g('b_disponibles').style.color  = colorDisp;
+  g('b_barra').style.width        = Math.min(necesarias>0 ? post_recria/necesarias*100 : 100, 120)+'%';
+  g('b_barra').style.background   = colorDisp;
+  g('b_necesarias').textContent   = necesarias.toFixed(1);
+  g('b_balance').textContent      = (balance>=0?'+':'')+balance.toFixed(1);
+  g('b_balance').style.color      = colorBal;
+}
+['p2_hembras','p2_m_parto','p2_m_crianza','p2_m_recria'].forEach(id => g(id).addEventListener('input', calcBalance));
+
+calcP1();
+
+// ===================== IMPRIMIR PANEL =====================
+function imprimirPanel(panel) {
+  const ids = { panel1: 'tab-panel1', panel2: 'tab-panel2' };
+  const titulos = { panel1: 'Panel 1 — Preñeces necesarias', panel2: 'Panel 2 — Tasas e IPP' };
+  const el = document.getElementById(ids[panel]);
+  const contenido = el.innerHTML;
+  const titulo = titulos[panel];
+  const win = window.open('', '_blank', 'width=1100,height=800');
+  win.document.write(`<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>${titulo}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--verde:#00c853;--amarillo:#ffd600;--naranja:#ff6d00;--rojo:#d50000;--fondo:#0d1117;--panel:#161b22;--borde:#30363d;--texto:#e6edf3;--texto2:#8b949e;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--fondo);color:var(--texto);font-family:'IBM Plex Sans',sans-serif;padding:24px 32px;}
+  .print-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--borde);}
+  .print-header .logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--verde);}
+  .print-header .asesor{text-align:right;font-size:12px;color:var(--texto2);}
+  .print-header .asesor strong{display:block;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--texto);}
+  .print-footer{margin-top:24px;padding-top:12px;border-top:1px solid var(--borde);font-size:11px;color:var(--texto2);text-align:center;}
+  /* heredar todos los estilos del tablero */
+  .calc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px;}
+  .calc-card{background:var(--panel);border:1px solid var(--borde);border-radius:12px;overflow:hidden;}
+  .calc-card-header{padding:14px 20px;border-bottom:1px solid var(--borde);}
+  .calc-card-titulo{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;color:var(--texto2);}
+  .c-row{display:flex;align-items:center;padding:10px 20px;gap:12px;border-bottom:1px solid #1c2128;}
+  .c-row:last-child{border-bottom:none;}
+  .c-row label{flex:1;font-size:13px;color:var(--texto);}
+  .c-row input[type=number]{background:#0d1117;border:1px solid var(--borde);border-radius:6px;color:var(--texto);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;padding:5px 10px;width:90px;text-align:right;}
+  .c-row input[type=range]{flex:1;accent-color:var(--verde);}
+  .unit{font-size:11px;color:var(--texto2);min-width:28px;font-family:'IBM Plex Mono',monospace;}
+  .sval{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;min-width:52px;text-align:right;}
+  .results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:20px;}
+  .rcard{background:var(--panel);border:1px solid var(--borde);border-radius:10px;padding:14px 16px;}
+  .rcard .rlbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--texto2);margin-bottom:6px;}
+  .rcard .rval{font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600;color:var(--verde);}
+  .rcard.hi .rval{font-size:28px;}
+  .barra-wrap{height:3px;background:var(--borde);border-radius:2px;margin:0 20px;}
+  .barra-fill{height:100%;border-radius:2px;}
+  .result-row-inline{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;border-bottom:1px solid #1c2128;}
+  .result-row-inline:last-child{border-bottom:none;}
+  .result-row-inline .rlbl2{font-size:13px;color:var(--texto2);}
+  .result-row-inline .rval2{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;}
+  .sec-sep{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;color:var(--texto2);margin:0 0 12px;}
+  .ciclos-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .ciclos-table th{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1px;color:var(--texto2);padding:8px 12px;text-align:right;border-bottom:1px solid var(--borde);}
+  .ciclos-table th:first-child{text-align:left;}
+  .ciclos-table td{padding:8px 12px;text-align:right;border-bottom:1px solid #1c2128;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .ciclos-table td:first-child{text-align:left;font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--verde);letter-spacing:1px;}
+  .ciclos-table tr.disabled td{color:#3a3a3a!important;}
+  .hab-si{color:var(--verde)!important;font-weight:600;}
+  .hab-no{color:#3a3a3a!important;}
+  .print-btn{display:none!important;}
+  @media print{
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#0d1117!important;}
+    .no-print{display:none!important;}
+  }
+</style>
+</head>
+<body>
+<div class="print-header">
+  <div>
+    <div class="logo">🐄 TABLERO REPRODUCTIVO</div>
+    <div style="font-size:11px;color:var(--texto2);text-transform:uppercase;letter-spacing:1px;margin-top:2px">${titulo}</div>
+  </div>
+  <div class="asesor"><strong>Dr. Rodolfo Murray</strong>Asesor en Producción de Leche</div>
+</div>
+${contenido}
+<div class="print-footer">Dr. Rodolfo Murray — Asesor en Producción de Leche &nbsp;|&nbsp; ${titulo}</div>
+<script>window.onload=function(){window.print();}<\/script>
+</body></html>`);
+  win.document.close();
+}
+</script>
+</body>
+</html>
