@@ -281,6 +281,15 @@ function elegirTambo(n) {
     TAMBO_ACTIVO = "TAMBO " + n;
     DB_KEY = "alerta_celo_tambo_" + n;
     document.getElementById("tambo-screen").style.display = "none";
+    // Limpiar grilla y alertas antes de cargar datos del tambo
+    var grid = document.getElementById("grid-21");
+    if(grid) grid.innerHTML = "";
+    var alertasHoy = document.getElementById("alertas-hoy");
+    if(alertasHoy) alertasHoy.innerHTML = "";
+    var iaHoy = document.getElementById("ia-hoy");
+    if(iaHoy) iaHoy.innerHTML = "";
+    var tablaReg = document.getElementById("tabla-registros");
+    if(tablaReg) tablaReg.innerHTML = "";
     init();
 }
 
@@ -531,6 +540,15 @@ function init() {
 function cambiarTambo() {
     DB_KEY = "alerta_celo_v1";
     TAMBO_ACTIVO = "";
+    // Limpiar todo antes de cambiar
+    var grid = document.getElementById("grid-21");
+    if(grid) grid.innerHTML = "";
+    var alertasHoy = document.getElementById("alertas-hoy");
+    if(alertasHoy) alertasHoy.innerHTML = "";
+    var iaHoy = document.getElementById("ia-hoy");
+    if(iaHoy) iaHoy.innerHTML = "";
+    var tablaReg = document.getElementById("tabla-registros");
+    if(tablaReg) tablaReg.innerHTML = "";
     abrirSelectorTambo();
 }
 </script>
