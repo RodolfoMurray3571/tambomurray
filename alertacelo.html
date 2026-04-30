@@ -319,7 +319,6 @@ function diasDesdeHoy(str){
 }
 
 // ── STORAGE ──
-var DB_KEY='alerta_celo_v1';
 function cargarDatos(){
   try{return JSON.parse(localStorage.getItem(DB_KEY))||[];}catch(e){return [];}
 }
