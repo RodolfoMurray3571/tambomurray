@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -147,9 +148,12 @@
     <div class="logo">🐄 ALERTA <span>CELO</span></div>
     <div class="asesor">Dr. Rodolfo Murray — Control de Repeticiones</div>
   </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button onclick="cambiarTambo()" style="background:#003a8c;border:1px solid #1E88E5;color:#1E88E5;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;padding:6px 14px;border-radius:6px;cursor:pointer;">⇄ CAMBIAR TAMBO</button>
   <div class="header-right">
     <div class="fecha-hoy" id="fecha-hoy-header"></div>
     <div class="asesor">Hoy</div>
+  </div>
   </div>
 </header>
 
@@ -525,6 +529,11 @@ function init() {
     renderGrilla();
 }
 
+function cambiarTambo() {
+    DB_KEY = "alerta_celo_v1";
+    TAMBO_ACTIVO = "";
+    abrirSelectorTambo();
+}
 </script>
 </body>
 </html>
