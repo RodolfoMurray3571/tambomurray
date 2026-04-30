@@ -256,7 +256,8 @@ function checkPwd() {
     var encoded = btoa(v);
     if (encoded === PWD_OK) {
         document.getElementById("login-screen").style.display = "none";
-        abrirSelectorTambo();
+        var st = localStorage.getItem("tambo_activo_n");
+        if(st) { elegirTambo(parseInt(st)); } else { abrirSelectorTambo(); }
     } else {
         var e = document.getElementById("pwd-error");
         e.textContent = "Contrasena incorrecta";
@@ -280,16 +281,11 @@ function abrirSelectorTambo() {
 function elegirTambo(n) {
     TAMBO_ACTIVO = "TAMBO " + n;
     DB_KEY = "alerta_celo_tambo_" + n;
+    localStorage.setItem("tambo_activo_n", String(n));
     document.getElementById("tambo-screen").style.display = "none";
-    // Limpiar grilla y alertas antes de cargar datos del tambo
-    var grid = document.getElementById("grid-21");
-    if(grid) grid.innerHTML = "";
-    var alertasHoy = document.getElementById("alertas-hoy");
-    if(alertasHoy) alertasHoy.innerHTML = "";
-    var iaHoy = document.getElementById("ia-hoy");
-    if(iaHoy) iaHoy.innerHTML = "";
-    var tablaReg = document.getElementById("tabla-registros");
-    if(tablaReg) tablaReg.innerHTML = "";
+    ["grid-21","alertas-hoy","ia-hoy","tabla-registros"].forEach(function(id){
+        var el=document.getElementById(id); if(el) el.innerHTML="";
+    });
     init();
 }
 
@@ -537,18 +533,16 @@ function init() {
     renderGrilla();
 }
 
+function limpiarPantalla() {
+    ["grid-21","alertas-hoy","ia-hoy","tabla-registros"].forEach(function(id){
+        var el=document.getElementById(id); if(el) el.innerHTML="";
+    });
+}
 function cambiarTambo() {
+    localStorage.removeItem("tambo_activo_n");
     DB_KEY = "alerta_celo_v1";
     TAMBO_ACTIVO = "";
-    // Limpiar todo antes de cambiar
-    var grid = document.getElementById("grid-21");
-    if(grid) grid.innerHTML = "";
-    var alertasHoy = document.getElementById("alertas-hoy");
-    if(alertasHoy) alertasHoy.innerHTML = "";
-    var iaHoy = document.getElementById("ia-hoy");
-    if(iaHoy) iaHoy.innerHTML = "";
-    var tablaReg = document.getElementById("tabla-registros");
-    if(tablaReg) tablaReg.innerHTML = "";
+    limpiarPantalla();
     abrirSelectorTambo();
 }
 </script>
