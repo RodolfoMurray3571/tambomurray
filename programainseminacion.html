@@ -146,7 +146,10 @@
   <div class="programa-wrap" id="programa-wrap">
     <div class="card-header" style="background:var(--panel);border:1px solid var(--borde);border-radius:12px 12px 0 0;">
       <div class="card-titulo" style="color:var(--verde);">PROGRAMA — ORDENADO POR HORA</div>
-      <button class="btn-print" onclick="window.print()">🖨 IMPRIMIR</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="agregarTodasCalendario()" style="background:#1a1600;border:1px solid #ffd600;color:#ffd600;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:9px 16px;border-radius:8px;cursor:pointer;">📅 TODAS AL CALENDARIO</button>
+        <button class="btn-print" onclick="window.print()">🖨 IMPRIMIR</button>
+      </div>
     </div>
     <div style="background:var(--panel);border:1px solid var(--borde);border-top:none;border-radius:0 0 12px 12px;padding:16px 20px;">
       <div class="resumen" id="resumen"></div>
@@ -349,17 +352,70 @@ function calcularPrograma() {
 
   var html = "";
   vacas.forEach(function(v) {
+    var calBtn = "<button onclick='agregarCalendario(" + JSON.stringify(v.vaca) + "," + JSON.stringify(v.iaHora) + "," + v.nextday + ")' " +
+      "style='background:#1a1600;border:1px solid #ffd600;color:#ffd600;font-family:Bebas Neue,sans-serif;font-size:11px;letter-spacing:1px;padding:5px 10px;border-radius:6px;cursor:pointer;flex-shrink:0;'>📅 CALENDARIO</button>";
     html += "<div class='prog-item " + v.tipo + "'>" +
       "<div class='prog-hora " + v.tipo + "'>" + v.iaHora + "</div>" +
       "<div class='prog-vaca'>Vaca " + v.vaca + "<span>Vista: " + v.obs + " &nbsp;|&nbsp; Quieta: " + v.qui + " &nbsp;|&nbsp; " + v.hrsIA + " hs desde quietud</span></div>" +
       (v.nextday ? "<div class='prog-nextday'>día siguiente</div>" : "") +
       "<div class='prog-badge " + v.tipo + "'>" + (v.tipo === "sex" ? "SEXADO" : "CONV.") + "</div>" +
+      calBtn +
       "</div>";
   });
   document.getElementById("programa-lista").innerHTML = html;
   document.getElementById("programa-wrap").style.display = "block";
   document.getElementById("programa-wrap").scrollIntoView({ behavior: "smooth" });
   iniciarAlarmas(vacas);
+  // Guardar vacas para el botón de agregar todas
+  window._vacasPrograma = vacas;
+}
+
+function agregarCalendario(vaca, horaIA, nextday) {
+  var hoy = new Date();
+  if (nextday) hoy.setDate(hoy.getDate() + 1);
+  var partes = horaIA.split(":");
+  var h = parseInt(partes[0]);
+  var m = parseInt(partes[1]);
+
+  // Fecha inicio IA
+  var inicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), h, m, 0);
+  var fin = new Date(inicio.getTime() + 30 * 60000); // 30 min duración
+
+  // Alarma 10 min antes
+  var alarma = new Date(inicio.getTime() - 10 * 60000);
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function fmtCal(d) {
+    return d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) +
+      "T" + pad(d.getHours()) + pad(d.getMinutes()) + "00";
+  }
+
+  var titulo = encodeURIComponent("IA Vaca " + vaca);
+  var desc = encodeURIComponent("Inseminar vaca " + vaca + " a las " + horaIA);
+  var fechaInicio = fmtCal(inicio);
+  var fechaFin = fmtCal(fin);
+
+  // Intentar Google Calendar (funciona en Android e iPhone)
+  var url = "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+    "&text=" + titulo +
+    "&dates=" + fechaInicio + "/" + fechaFin +
+    "&details=" + desc +
+    "&sf=true&output=xml";
+
+  window.open(url, "_blank");
+}
+
+function agregarTodasCalendario() {
+  if (!window._vacasPrograma || window._vacasPrograma.length === 0) {
+    alert("No hay vacas para agregar.");
+    return;
+  }
+  if (!confirm("Se van a abrir " + window._vacasPrograma.length + " pestañas, una por cada vaca. ¿Continuar?")) return;
+  window._vacasPrograma.forEach(function(v, i) {
+    setTimeout(function() {
+      agregarCalendario(v.vaca, v.iaHora, v.nextday);
+    }, i * 800);
+  });
 }
 
 function limpiarTodo() {
