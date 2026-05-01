@@ -67,6 +67,31 @@
   .notif-close{position:absolute;top:8px;right:12px;background:none;border:none;color:#8b949e;font-size:18px;cursor:pointer;}
   .alarma-ind{position:fixed;bottom:20px;right:20px;background:#003a1a;border:1px solid var(--verde);border-radius:8px;padding:8px 16px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:var(--verde);z-index:100;display:none;}
   @keyframes slideIn{from{transform:translateX(120%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+  .btn-calendario{background:#003a5c;border:1px solid #1E88E5;color:#90CAF9;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:9px 20px;border-radius:8px;cursor:pointer;transition:background .2s,color .2s;}
+  .btn-calendario:hover{background:#1E88E5;color:#000;}
+  .modal-cal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9990;display:none;align-items:center;justify-content:center;}
+  .modal-cal.visible{display:flex;}
+  .modal-cal-box{background:#161b22;border:1px solid #30363d;border-radius:16px;padding:28px 32px;width:520px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.8);}
+  .modal-cal-titulo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#1E88E5;margin-bottom:4px;}
+  .modal-cal-sub{font-size:12px;color:#8b949e;margin-bottom:20px;}
+  .cal-item{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .cal-item-info{flex:1;}
+  .cal-item-hora{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;}
+  .cal-item-hora.conv{color:#90CAF9;}
+  .cal-item-hora.sex{color:#AFA9EC;}
+  .cal-item-vaca{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:#e6edf3;margin-top:2px;}
+  .cal-item-tipo{font-size:11px;color:#8b949e;font-family:'IBM Plex Mono',monospace;}
+  .cal-btns{display:flex;gap:8px;flex-wrap:wrap;}
+  .cal-btn-g{background:#003a8c;border:1px solid #1E88E5;color:#90CAF9;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;padding:7px 12px;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-block;transition:background .2s;}
+  .cal-btn-g:hover{background:#1E88E5;color:#000;}
+  .cal-btn-i{background:#1a1630;border:1px solid #7F77DD;color:#AFA9EC;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;padding:7px 12px;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-block;transition:background .2s;}
+  .cal-btn-i:hover{background:#7F77DD;color:#000;}
+  .cal-btn-ics{background:#1a2a00;border:1px solid #00c853;color:#00c853;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;padding:7px 12px;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-block;transition:background .2s;}
+  .cal-btn-ics:hover{background:#00c853;color:#000;}
+  .modal-cal-close{background:transparent;border:1px solid #30363d;color:#8b949e;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:10px 20px;border-radius:8px;cursor:pointer;margin-top:16px;width:100%;}
+  .modal-cal-close:hover{border-color:#e53935;color:#e53935;}
+  .cal-todo-btn{background:#003a1a;border:1px solid #00c853;color:#00c853;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:10px 16px;border-radius:8px;cursor:pointer;margin-bottom:16px;width:100%;transition:background .2s;}
+  .cal-todo-btn:hover{background:#00c853;color:#000;}
   @media print{
     .card:first-child{display:none;}.btn-calcular,.btn-limpiar,.btn-print{display:none;}
     .programa-wrap{display:block!important;}body{background:#fff;color:#000;}
@@ -146,12 +171,24 @@
   <div class="programa-wrap" id="programa-wrap">
     <div class="card-header" style="background:var(--panel);border:1px solid var(--borde);border-radius:12px 12px 0 0;">
       <div class="card-titulo" style="color:var(--verde);">PROGRAMA — ORDENADO POR HORA</div>
+      <button class="btn-calendario" onclick="abrirModalCal()">📅 AGREGAR AL CALENDARIO</button>
       <button class="btn-print" onclick="window.print()">🖨 IMPRIMIR</button>
     </div>
     <div style="background:var(--panel);border:1px solid var(--borde);border-top:none;border-radius:0 0 12px 12px;padding:16px 20px;">
       <div class="resumen" id="resumen"></div>
       <div class="programa-lista" id="programa-lista"></div>
     </div>
+  </div>
+</div>
+
+<!-- MODAL CALENDARIO -->
+<div class="modal-cal" id="modal-cal">
+  <div class="modal-cal-box">
+    <div class="modal-cal-titulo">📅 AGREGAR AL CALENDARIO</div>
+    <div class="modal-cal-sub">Elegí cómo agregar las alarmas — van a sonar aunque el programa esté cerrado</div>
+    <button class="cal-todo-btn" onclick="descargarTodosICS()">⬇ DESCARGAR TODOS COMO ARCHIVO (.ICS)</button>
+    <div id="cal-lista"></div>
+    <button class="modal-cal-close" onclick="cerrarModalCal()">✕ CERRAR</button>
   </div>
 </div>
 
@@ -359,13 +396,135 @@ function calcularPrograma() {
   document.getElementById("programa-lista").innerHTML = html;
   document.getElementById("programa-wrap").style.display = "block";
   document.getElementById("programa-wrap").scrollIntoView({ behavior: "smooth" });
+  vacasPrograma = vacas;
   iniciarAlarmas(vacas);
+}
+
+
+// ---- CALENDARIO ----
+var vacasPrograma = [];
+
+function abrirModalCal() {
+  if (vacasPrograma.length === 0) { alert("Calculá el programa primero."); return; }
+  var html = "";
+  vacasPrograma.forEach(function(v, idx) {
+    var gcUrl = generarGoogleCalUrl(v);
+    html += "<div class='cal-item'>" +
+      "<div class='cal-item-info'>" +
+        "<div class='cal-item-hora " + v.tipo + "'>" + v.iaHora + (v.nextday ? " <span style='font-size:12px;color:#ffd600'>+1 día</span>" : "") + "</div>" +
+        "<div class='cal-item-vaca'>Vaca " + v.vaca + "</div>" +
+        "<div class='cal-item-tipo'>" + (v.tipo === "sex" ? "Semen Sexado" : "Semen Convencional") + " · Vista: " + v.obs + " · Quieta: " + v.qui + "</div>" +
+      "</div>" +
+      "<div class='cal-btns'>" +
+        "<a class='cal-btn-g' href='" + gcUrl + "' target='_blank'>Google Cal</a>" +
+        "<a class='cal-btn-ics' href='#' onclick='descargarICS([vacasPrograma[" + idx + "]]);return false;'>⬇ .ICS</a>" +
+      "</div>" +
+    "</div>";
+  });
+  document.getElementById("cal-lista").innerHTML = html;
+  document.getElementById("modal-cal").classList.add("visible");
+}
+
+function cerrarModalCal() {
+  document.getElementById("modal-cal").classList.remove("visible");
+}
+
+function getEventDate(v) {
+  var hoy = new Date();
+  if (v.nextday) hoy.setDate(hoy.getDate() + 1);
+  var h = Math.floor(v.iaTotal / 60);
+  var m = v.iaTotal % 60;
+  hoy.setHours(h, m, 0, 0);
+  return new Date(hoy);
+}
+
+function formatICSDate(d) {
+  function p(n){ return String(n).padStart(2,"0"); }
+  return d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "T" + p(d.getHours()) + p(d.getMinutes()) + "00";
+}
+
+function generarGoogleCalUrl(v) {
+  var start = getEventDate(v);
+  var end = new Date(start.getTime() + 30 * 60000);
+  function p(d) {
+    function z(n){ return String(n).padStart(2,"0"); }
+    return d.getFullYear() + z(d.getMonth()+1) + z(d.getDate()) + "T" + z(d.getHours()) + z(d.getMinutes()) + "00";
+  }
+  var titulo = encodeURIComponent("🐄 IA Vaca " + v.vaca + " (" + (v.tipo==="sex"?"Sexado":"Conv.") + ")");
+  var detalle = encodeURIComponent(
+    "Inseminación artificial\nVaca: " + v.vaca +
+    "\nTipo: " + (v.tipo==="sex"?"Semen Sexado":"Semen Convencional") +
+    "\nHora vista: " + v.obs +
+    "\nHora quietud: " + v.qui +
+    "\n\nPrograma Dr. Rodolfo Murray"
+  );
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+    "&text=" + titulo +
+    "&dates=" + p(start) + "/" + p(end) +
+    "&details=" + detalle +
+    "&sf=true&output=xml";
+}
+
+function generarICSTexto(vacas) {
+  var lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Programa Inseminacion Dr Murray//ES",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH"
+  ];
+  vacas.forEach(function(v) {
+    var start = getEventDate(v);
+    var end = new Date(start.getTime() + 30 * 60000);
+    // alarma 10 min antes
+    var uid = "ia-" + v.vaca + "-" + Date.now() + "@murray";
+    lines.push("BEGIN:VEVENT");
+    lines.push("UID:" + uid);
+    lines.push("DTSTART:" + formatICSDate(start));
+    lines.push("DTEND:" + formatICSDate(end));
+    lines.push("SUMMARY:🐄 IA Vaca " + v.vaca + " (" + (v.tipo==="sex"?"Sexado":"Conv.") + ")");
+    lines.push("DESCRIPTION:Inseminación artificial\\nVaca: " + v.vaca + "\\nTipo: " + (v.tipo==="sex"?"Semen Sexado":"Semen Convencional") + "\\nHora vista: " + v.obs + "\\nHora quietud: " + v.qui + "\\n\\nPrograma Dr. Rodolfo Murray");
+    // alarma 10 minutos antes
+    lines.push("BEGIN:VALARM");
+    lines.push("TRIGGER:-PT10M");
+    lines.push("ACTION:DISPLAY");
+    lines.push("DESCRIPTION:⏰ En 10 min: IA Vaca " + v.vaca);
+    lines.push("END:VALARM");
+    // alarma en el momento
+    lines.push("BEGIN:VALARM");
+    lines.push("TRIGGER:PT0M");
+    lines.push("ACTION:DISPLAY");
+    lines.push("DESCRIPTION:🚨 AHORA: Inseminar Vaca " + v.vaca);
+    lines.push("END:VALARM");
+    lines.push("END:VEVENT");
+  });
+  lines.push("END:VCALENDAR");
+  return lines.join("\r\n");
+}
+
+function descargarICS(vacas) {
+  var contenido = generarICSTexto(vacas);
+  var blob = new Blob([contenido], { type: "text/calendar;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "inseminacion_" + (vacas.length === 1 ? "vaca_" + vacas[0].vaca : "programa_completo") + ".ics";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+function descargarTodosICS() {
+  if (vacasPrograma.length === 0) return;
+  descargarICS(vacasPrograma);
 }
 
 function limpiarTodo() {
   if (!confirm("¿Limpiar todas las vacas cargadas?")) return;
   if (alarmaInterval) clearInterval(alarmaInterval);
   alarmasActivas = [];
+  vacasPrograma = [];
   document.getElementById("alarma-ind").style.display = "none";
   renderTabla();
   document.getElementById("programa-wrap").style.display = "none";
