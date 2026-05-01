@@ -1,77 +1,101 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Programa de Inseminación</title>
+<title>Alerta Celo</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-  :root{--verde:#00c853;--amarillo:#ffd600;--naranja:#ff6d00;--rojo:#e53935;--azul:#1E88E5;--violeta:#7F77DD;--fondo:#0d1117;--panel:#161b22;--panel2:#1c2128;--borde:#30363d;--texto:#e6edf3;--texto2:#8b949e;}
+
+  :root{
+    --verde:#00c853;--amarillo:#ffd600;--naranja:#ff6d00;--rojo:#e53935;--azul:#1565C0;
+    --azul-light:#1E88E5;--rojo-light:#EF5350;
+    --fondo:#0d1117;--panel:#161b22;--panel2:#1c2128;--borde:#30363d;
+    --texto:#e6edf3;--texto2:#8b949e;
+  }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--fondo);color:var(--texto);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;}
+
+  /* HEADER */
   header{background:var(--panel);border-bottom:1px solid var(--borde);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-  .logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--verde);}
-  .header-fecha{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--texto2);letter-spacing:1px;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--azul-light);}
+  .logo span{color:var(--rojo-light);}
+  .header-right{text-align:right;}
+  .fecha-hoy{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--texto);}
   .asesor{font-size:11px;color:var(--texto2);text-transform:uppercase;letter-spacing:1px;}
-  .container{max-width:960px;margin:0 auto;padding:24px;}
-  .card{background:var(--panel);border:1px solid var(--borde);border-radius:12px;overflow:hidden;margin-bottom:20px;}
-  .card-header{padding:14px 20px;border-bottom:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-  .card-titulo{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;color:var(--texto2);}
-  .tabla-carga{width:100%;border-collapse:collapse;}
-  .tabla-carga thead th{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1px;color:var(--texto2);padding:10px 12px;text-align:left;border-bottom:1px solid var(--borde);background:var(--panel2);}
-  .tabla-carga tbody tr{border-bottom:1px solid var(--panel2);transition:background .1s;}
-  .tabla-carga tbody tr:hover{background:var(--panel2);}
-  .tabla-carga tbody td{padding:6px 8px;vertical-align:middle;}
-  .inp-vaca{background:#0d1117;border:1px solid var(--borde);border-radius:6px;color:var(--texto);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;padding:7px 10px;outline:none;width:100%;transition:border-color .2s;text-transform:uppercase;}
-  .inp-vaca:focus{border-color:var(--azul);}
-  .sel-h{background:#0d1117;border:1px solid var(--borde);border-radius:6px;color:var(--texto);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;padding:7px 6px;outline:none;cursor:pointer;-webkit-appearance:none;text-align:center;width:58px;}
-  .sel-h:focus{border-color:var(--azul);}
-  .sel-tipo{background:#0d1117;border:1px solid var(--borde);border-radius:6px;color:var(--texto);font-size:12px;padding:7px 6px;outline:none;cursor:pointer;width:100%;}
-  .sel-tipo.conv{border-color:#1E88E5;color:#90CAF9;}
-  .sel-tipo.sex{border-color:#7F77DD;color:#AFA9EC;}
-  .row-num{font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--texto2);text-align:center;width:28px;}
-  .ia-hora{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;text-align:center;}
-  .ia-hora.conv{color:#90CAF9;}
-  .ia-hora.sex{color:#AFA9EC;}
-  .ia-hora.empty{color:var(--panel2);}
-  .btn-calcular{background:#003a1a;border:1px solid var(--verde);color:var(--verde);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:9px 20px;border-radius:8px;cursor:pointer;transition:background .2s,color .2s;}
-  .btn-calcular:hover{background:var(--verde);color:#000;}
-  .btn-limpiar{background:transparent;border:1px solid var(--borde);color:var(--texto2);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:9px 16px;border-radius:8px;cursor:pointer;}
-  .btn-limpiar:hover{border-color:var(--rojo);color:var(--rojo);}
-  .btn-print{background:transparent;border:1px solid var(--borde);color:var(--texto2);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:9px 16px;border-radius:8px;cursor:pointer;}
-  .btn-print:hover{border-color:var(--amarillo);color:var(--amarillo);}
-  .programa-wrap{display:none;}
-  .programa-lista{display:flex;flex-direction:column;gap:8px;}
-  .prog-item{background:var(--panel);border:1px solid var(--borde);border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
-  .prog-item.conv{border-left:4px solid var(--azul);}
-  .prog-item.sex{border-left:4px solid var(--violeta);}
-  .prog-hora{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;min-width:70px;}
-  .prog-hora.conv{color:#90CAF9;}
-  .prog-hora.sex{color:#AFA9EC;}
-  .prog-vaca{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--texto);}
-  .prog-vaca span{font-size:11px;color:var(--texto2);display:block;font-family:'IBM Plex Sans',sans-serif;font-weight:400;letter-spacing:0;margin-top:2px;}
-  .prog-badge{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1px;padding:3px 10px;border-radius:4px;margin-left:auto;}
-  .prog-badge.conv{background:#003a8c;color:#90CAF9;border:1px solid var(--azul);}
-  .prog-badge.sex{background:#1a1630;color:#AFA9EC;border:1px solid var(--violeta);}
-  .prog-nextday{font-size:11px;color:var(--amarillo);font-family:'IBM Plex Mono',monospace;}
-  .resumen{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
-  .res-chip{background:var(--panel2);border-radius:8px;padding:10px 16px;font-size:12px;color:var(--texto2);}
-  .res-chip strong{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;display:block;color:var(--texto);}
-  .notif-box{position:fixed;top:20px;right:20px;z-index:9998;background:#3a0000;border:2px solid #e53935;border-radius:12px;padding:16px 20px;max-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.6);display:none;}
-  .notif-box.warn{background:#1a1600;border-color:#ffd600;}
-  .notif-titulo{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#e53935;margin-bottom:6px;}
-  .notif-box.warn .notif-titulo{color:#ffd600;}
-  .notif-vaca{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:#e6edf3;}
-  .notif-sub{font-size:12px;color:#8b949e;margin-top:4px;}
-  .notif-close{position:absolute;top:8px;right:12px;background:none;border:none;color:#8b949e;font-size:18px;cursor:pointer;}
-  .alarma-ind{position:fixed;bottom:20px;right:20px;background:#003a1a;border:1px solid var(--verde);border-radius:8px;padding:8px 16px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:var(--verde);z-index:100;display:none;}
-  @keyframes slideIn{from{transform:translateX(120%);opacity:0;}to{transform:translateX(0);opacity:1;}}
-  @media print{
-    .card:first-child{display:none;}.btn-calcular,.btn-limpiar,.btn-print{display:none;}
-    .programa-wrap{display:block!important;}body{background:#fff;color:#000;}
-    .prog-item{background:#f5f5f5;border-color:#ccc;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+  /* TABS */
+  .tabs{background:var(--panel);border-bottom:1px solid var(--borde);display:flex;padding:0 24px;}
+  .tab{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1.5px;color:var(--texto2);padding:12px 20px;cursor:pointer;border-bottom:3px solid transparent;transition:color .2s,border-color .2s;}
+  .tab:hover{color:var(--texto);}
+  .tab.active{color:var(--azul-light);border-bottom-color:var(--azul-light);}
+  .tab-content{display:none;padding:24px;}
+  .tab-content.active{display:block;}
+
+  /* ALERTA HOY */
+  .alerta-hoy{background:var(--panel);border:1px solid var(--borde);border-radius:12px;padding:20px 24px;margin-bottom:20px;}
+  .alerta-titulo{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;color:var(--texto2);margin-bottom:12px;}
+  .alerta-vacas{display:flex;flex-wrap:wrap;gap:10px;}
+  .alerta-chip{background:#3a0000;border:1px solid var(--rojo);border-radius:8px;padding:8px 16px;font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--rojo-light);display:flex;align-items:center;gap:8px;}
+  .alerta-chip .chip-fecha{font-size:10px;color:#EF9A9A;font-weight:400;display:block;margin-top:2px;}
+  .alerta-empty{font-size:13px;color:var(--texto2);font-style:italic;}
+  .alerta-badge{background:var(--rojo);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-left:6px;vertical-align:middle;}
+
+  /* GRILLA 21 DIAS */
+  .grid-wrap{overflow-x:auto;margin-bottom:20px;}
+  .grid-21{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;min-width:560px;}
+  .dia-card{background:var(--panel);border:1px solid var(--borde);border-radius:10px;padding:10px 8px;min-height:90px;cursor:pointer;transition:border-color .15s;}
+  .dia-card:hover{border-color:#555;}
+  .dia-card.hoy{border-color:var(--amarillo);background:#1a1600;}
+  .dia-card .dia-label{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1px;color:var(--texto2);margin-bottom:2px;}
+  .dia-card .dia-num{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:var(--texto);margin-bottom:6px;}
+  .dia-card.hoy .dia-num{color:var(--amarillo);}
+  .dia-card .vacas-ia{display:flex;flex-wrap:wrap;gap:3px;}
+  .vaca-tag{border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:2px 6px;}
+  .vaca-tag.ia{background:#003a8c;color:#90CAF9;}
+  .vaca-tag.rep{background:#3a0000;color:#EF9A9A;}
+
+  /* FORMULARIO */
+  .form-card{background:var(--panel);border:1px solid var(--borde);border-radius:12px;padding:20px 24px;margin-bottom:20px;}
+  .form-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .form-group{display:flex;flex-direction:column;gap:6px;}
+  .form-group label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--texto2);}
+  .form-group input,.form-group select{background:#0d1117;border:1px solid var(--borde);border-radius:8px;color:var(--texto);font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;padding:10px 14px;outline:none;transition:border-color .2s;}
+  .form-group input:focus,.form-group select:focus{border-color:var(--azul-light);}
+  .form-group input[type=number]{width:140px;}
+  .btn-agregar{background:#003a8c;border:1px solid var(--azul-light);color:var(--azul-light);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;padding:11px 24px;border-radius:8px;cursor:pointer;transition:background .2s,color .2s;align-self:flex-end;}
+  .btn-agregar:hover{background:var(--azul-light);color:#fff;}
+  .btn-danger{background:#3a0000;border:1px solid var(--rojo);color:var(--rojo-light);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;padding:5px 12px;border-radius:6px;cursor:pointer;transition:background .2s;}
+  .btn-danger:hover{background:var(--rojo);color:#fff;}
+
+  /* LISTA REGISTROS */
+  .registros-tabla{width:100%;border-collapse:collapse;font-size:13px;}
+  .registros-tabla th{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1px;color:var(--texto2);padding:10px 14px;text-align:left;border-bottom:1px solid var(--borde);}
+  .registros-tabla td{padding:10px 14px;border-bottom:1px solid var(--panel2);vertical-align:middle;}
+  .registros-tabla tr:hover td{background:var(--panel2);}
+  .caravana-badge{background:#003a8c;color:#90CAF9;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;padding:3px 10px;display:inline-block;}
+  .rep-badge{background:#3a0000;color:#EF9A9A;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;padding:3px 10px;display:inline-block;}
+  .rep-badge.hoy-badge{background:var(--rojo);color:#fff;animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+  .empty-state{text-align:center;padding:40px;color:var(--texto2);font-size:13px;}
+
+  /* LEYENDA */
+  .leyenda{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;}
+  .ley-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--texto2);}
+  .ley-dot{width:12px;height:12px;border-radius:3px;}
+
+  @media(max-width:600px){
+    header{padding:12px 16px;}
+    .tabs{padding:0 16px;}
+    .tab-content{padding:16px;}
+    .form-row{flex-direction:column;align-items:stretch;}
+    .form-group input[type=number]{width:100%;}
+    .btn-agregar{width:100%;text-align:center;}
+    .registros-tabla{font-size:12px;}
+    .registros-tabla td,.registros-tabla th{padding:8px 10px;}
   }
-  @media(max-width:600px){.container{padding:16px;}header{padding:12px 16px;}.sel-h{width:50px;font-size:13px;}.inp-vaca{font-size:13px;}.prog-hora{font-size:20px;}}
+
 </style>
 </head>
 <body>
@@ -79,295 +103,447 @@
 <!-- LOGIN -->
 <div id="login-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0d1117;z-index:9999;display:flex;align-items:center;justify-content:center;">
   <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;padding:48px 40px;width:360px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.6);">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:3px;color:#00c853;margin-bottom:4px;">🐄 PROGRAMA</div>
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#8b949e;margin-bottom:28px;">INSEMINACIÓN DIARIA</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:3px;color:#1E88E5;margin-bottom:4px;">&#x1F404; ALERTA CELO</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:#8b949e;margin-bottom:28px;">CONTROL DE REPETICIONES</div>
+    <div style="font-size:13px;color:#e6edf3;font-weight:600;margin-bottom:4px;">Dr. Rodolfo Murray</div>
+    <div style="font-size:11px;color:#8b949e;margin-bottom:28px;">Asesor en Produccion de Leche</div>
+    <input id="pwd-input" type="password" placeholder="**********"
+      style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#e6edf3;font-family:'IBM Plex Mono',monospace;font-size:16px;padding:12px 16px;outline:none;text-align:center;letter-spacing:4px;margin-bottom:10px;"
+      onkeydown="if(event.key==='Enter') checkPwd()">
+    <div id="pwd-error" style="color:#d50000;font-size:12px;margin-bottom:10px;min-height:16px;font-family:'IBM Plex Mono',monospace;"></div>
+    <button id="btn-ingresar" onclick="checkPwd()"
+      style="width:100%;background:#003a8c;border:1px solid #1E88E5;color:#1E88E5;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;padding:13px;border-radius:8px;cursor:pointer;">
+      INGRESAR
+    </button>
+    <div style="margin-top:24px;font-size:10px;color:#3a3a3a;">Dr. Rodolfo Murray - Todos los derechos reservados</div>
+  </div>
+</div>
+
+<!-- SELECTOR DE TAMBO -->
+<div id="tambo-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0d1117;z-index:9998;display:none;align-items:center;justify-content:center;">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;padding:40px 36px;width:460px;max-width:95vw;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.6);">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:#1E88E5;margin-bottom:20px;">&#x1F404; SELECCIONAR TAMBO</div>
+    <div id="tambo-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;"></div>
+    <div style="font-size:11px;color:#3a3a3a;">Cada tambo mantiene sus propios datos</div>
+  </div>
+</div>
+
+<div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:#8b949e;margin-bottom:28px;">CONTROL DE REPETICIONES</div>
     <div style="font-size:13px;color:#e6edf3;font-weight:600;margin-bottom:4px;">Dr. Rodolfo Murray</div>
     <div style="font-size:11px;color:#8b949e;margin-bottom:28px;">Asesor en Producción de Leche</div>
     <input id="pwd-input" type="password" placeholder="••••••••••"
       style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#e6edf3;font-family:'IBM Plex Mono',monospace;font-size:16px;padding:12px 16px;outline:none;text-align:center;letter-spacing:4px;margin-bottom:10px;transition:border-color .2s;"
-      onfocus="this.style.borderColor='#00c853'" onblur="this.style.borderColor='#30363d'"
+      onfocus="this.style.borderColor='#1E88E5'" onblur="this.style.borderColor='#30363d'"
       onkeydown="if(event.key==='Enter') checkPwd()">
     <div id="pwd-error" style="color:#d50000;font-size:12px;margin-bottom:10px;min-height:16px;font-family:'IBM Plex Mono',monospace;"></div>
-    <button onclick="checkPwd()"
-      style="width:100%;background:#003a1a;border:1px solid #00c853;color:#00c853;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;padding:13px;border-radius:8px;cursor:pointer;"
-      onmouseover="this.style.background='#00c853';this.style.color='#000'"
-      onmouseout="this.style.background='#003a1a';this.style.color='#00c853'">INGRESAR</button>
+    <button onclick="checkPwd()" style="width:100%;background:#003a8c;border:1px solid #1E88E5;color:#1E88E5;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;padding:13px;border-radius:8px;cursor:pointer;"
+      onmouseover="this.style.background='#1E88E5';this.style.color='#fff'"
+      onmouseout="this.style.background='#003a8c';this.style.color='#1E88E5'">INGRESAR</button>
     <div style="margin-top:24px;font-size:10px;color:#3a3a3a;">© Dr. Rodolfo Murray — Todos los derechos reservados</div>
   </div>
 </div>
 
-<!-- NOTIFICACIONES -->
-<div class="notif-box" id="notif-box">
-  <button class="notif-close" onclick="cerrarNotif()">✕</button>
-  <div class="notif-titulo" id="notif-titulo"></div>
-  <div class="notif-vaca" id="notif-vaca"></div>
-  <div class="notif-sub" id="notif-sub"></div>
-</div>
-<div class="alarma-ind" id="alarma-ind">🔔 ALARMAS ACTIVAS</div>
-
 <header>
   <div>
-    <div class="logo">🐄 Programa de Inseminación</div>
-    <div class="asesor">Dr. Rodolfo Murray — Inseminación Diaria</div>
+    <div class="logo">🐄 ALERTA <span>CELO</span></div>
+    <div class="asesor">Dr. Rodolfo Murray — Control de Repeticiones</div>
   </div>
-  <div style="text-align:right">
-    <div class="header-fecha" id="header-fecha"></div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button onclick="cambiarTambo()" style="background:#003a8c;border:1px solid #1E88E5;color:#1E88E5;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;padding:6px 14px;border-radius:6px;cursor:pointer;">⇄ CAMBIAR TAMBO</button>
+  <div class="header-right">
+    <div class="fecha-hoy" id="fecha-hoy-header"></div>
     <div class="asesor">Hoy</div>
+  </div>
   </div>
 </header>
 
-<div class="container">
-  <div class="card">
-    <div class="card-header">
-      <div class="card-titulo">REGISTRAR VACAS DETECTADAS EN CELO</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn-limpiar" onclick="limpiarTodo()">✕ LIMPIAR TODO</button>
-        <button class="btn-calcular" onclick="calcularPrograma()">▶ CALCULAR PROGRAMA</button>
-      </div>
-    </div>
-    <div style="overflow-x:auto">
-      <table class="tabla-carga">
-        <thead>
-          <tr>
-            <th style="width:32px">#</th>
-            <th style="min-width:100px">N° Vaca</th>
-            <th style="min-width:140px">Hora que vio el celo</th>
-            <th style="min-width:140px">Hora que se quedó quieta</th>
-            <th style="min-width:120px">Tipo semen</th>
-            <th style="min-width:100px;text-align:center">IA calculada</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-body"></tbody>
-      </table>
-    </div>
-  </div>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('hoy',this)">HOY <span id="badge-alerta" class="alerta-badge" style="display:none">0</span></div>
+  <div class="tab" onclick="showTab('grilla',this)">GRILLA 21 DÍAS</div>
+  <div class="tab" onclick="showTab('registrar',this)">REGISTRAR IA</div>
+</div>
 
-  <div class="programa-wrap" id="programa-wrap">
-    <div class="card-header" style="background:var(--panel);border:1px solid var(--borde);border-radius:12px 12px 0 0;">
-      <div class="card-titulo" style="color:var(--verde);">PROGRAMA — ORDENADO POR HORA</div>
-      <button class="btn-print" onclick="window.print()">🖨 IMPRIMIR</button>
-    </div>
-    <div style="background:var(--panel);border:1px solid var(--borde);border-top:none;border-radius:0 0 12px 12px;padding:16px 20px;">
-      <div class="resumen" id="resumen"></div>
-      <div class="programa-lista" id="programa-lista"></div>
-    </div>
+<!-- TAB HOY -->
+<div id="tab-hoy" class="tab-content active">
+  <div class="alerta-hoy" style="border-color:var(--rojo);background:#0d0000;">
+    <div class="alerta-titulo" style="color:var(--rojo-light);">⚠ VACAS QUE PUEDEN REPETIR HOY</div>
+    <div class="alerta-vacas" id="alertas-hoy"></div>
+  </div>
+  <div class="alerta-hoy">
+    <div class="alerta-titulo" style="color:#90CAF9;">📋 VACAS INSEMINADAS HOY</div>
+    <div class="alerta-vacas" id="ia-hoy"></div>
   </div>
 </div>
 
+<!-- TAB GRILLA -->
+<div id="tab-grilla" class="tab-content">
+  <div class="leyenda">
+    <div class="ley-item"><div class="ley-dot" style="background:#003a8c;border:1px solid #1E88E5"></div>Inseminada (IA)</div>
+    <div class="ley-item"><div class="ley-dot" style="background:#3a0000;border:1px solid #e53935"></div>Posible repetición</div>
+    <div class="ley-item"><div class="ley-dot" style="background:#1a1600;border:1px solid var(--amarillo)"></div>Hoy</div>
+  </div>
+  <div class="grid-wrap">
+    <div class="grid-21" id="grid-21"></div>
+  </div>
+</div>
+
+<!-- TAB REGISTRAR -->
+<div id="tab-registrar" class="tab-content">
+  <div class="form-card">
+    <div class="alerta-titulo" style="margin-bottom:16px">REGISTRAR NUEVA INSEMINACIÓN</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>N° de caravana</label>
+        <input type="text" id="inp-caravana" placeholder="Ej: 1234 o A12" style="width:140px;text-transform:uppercase;">
+      </div>
+      <div class="form-group">
+        <label>Fecha de IA</label>
+        <input type="date" id="inp-fecha" style="width:160px;">
+      </div>
+      <div class="form-group">
+        <label>Tipo de semen</label>
+        <select id="inp-tipo" style="width:160px;">
+          <option value="conv">Convencional</option>
+          <option value="sex">Sexado</option>
+        </select>
+      </div>
+      <button class="btn-agregar" onclick="registrarIA()">+ REGISTRAR</button>
+    </div>
+    <div id="msg-ok" style="margin-top:12px;font-size:13px;color:var(--verde);display:none;font-family:'IBM Plex Mono',monospace;"></div>
+  </div>
+
+  <div class="form-card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <div class="alerta-titulo" style="margin-bottom:4px">RESPALDO DE DATOS</div>
+      <div style="font-size:12px;color:var(--texto2)">Exportá los datos como respaldo y volvé a importarlos si es necesario</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-agregar" onclick="exportarDatos()" style="background:#003a1a;border-color:var(--verde);color:var(--verde);">⬇ EXPORTAR</button>
+      <button class="btn-agregar" onclick="document.getElementById('inp-import').click()" style="background:#1a1200;border-color:var(--amarillo);color:var(--amarillo);">⬆ IMPORTAR</button>
+      <input type="file" id="inp-import" accept=".json" style="display:none" onchange="importarDatos(this)">
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="alerta-titulo" style="margin-bottom:16px">REGISTROS ACTIVOS <span style="font-size:11px;color:var(--texto2);font-family:'IBM Plex Sans',sans-serif;font-weight:400;letter-spacing:0">(últimas inseminaciones)</span></div>
+    <div style="overflow-x:auto">
+      <table class="registros-tabla">
+        <thead>
+          <tr>
+            <th>Caravana</th>
+            <th>Fecha IA</th>
+            <th>Tipo</th>
+            <th>Posible repetición</th>
+            <th>Estado</th>
+            <th>Días de servicio</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tabla-registros"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 <script>
-var _k = "Um9kb2xmbzIwMjQ=";
+// ===== LOGIN Y SELECTOR =====
+var PWD_OK = "Um9kb2xmbzIwMjQ=";
+var DB_KEY = "alerta_celo_v1";
+var TAMBO_ACTIVO = "";
+
 function checkPwd() {
-  var v = document.getElementById("pwd-input").value;
-  if (btoa(v) === _k) {
-    document.getElementById("login-screen").style.display = "none";
+    var input = document.getElementById("pwd-input");
+    var v = input.value;
+    var encoded = btoa(v);
+    if (encoded === PWD_OK) {
+        document.getElementById("login-screen").style.display = "none";
+        var st = localStorage.getItem("tambo_activo_n");
+        if(st) { elegirTambo(parseInt(st)); } else { abrirSelectorTambo(); }
+    } else {
+        var e = document.getElementById("pwd-error");
+        e.textContent = "Contrasena incorrecta";
+        input.value = "";
+        input.focus();
+        setTimeout(function() { e.textContent = ""; }, 2500);
+    }
+}
+
+function abrirSelectorTambo() {
+    var grid = document.getElementById("tambo-grid");
+    var html = "";
+    for (var n = 1; n <= 15; n++) {
+        html += "<button onclick='elegirTambo(" + n + ")' style='background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px 8px;color:#e6edf3;font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer;'>TAMBO " + n + "</button>";
+    }
+    grid.innerHTML = html;
+    var ts = document.getElementById("tambo-screen");
+    ts.style.display = "flex";
+}
+
+function elegirTambo(n) {
+    TAMBO_ACTIVO = "TAMBO " + n;
+    DB_KEY = "alerta_celo_tambo_" + n;
+    localStorage.setItem("tambo_activo_n", String(n));
+    document.getElementById("tambo-screen").style.display = "none";
+    ["grid-21","alertas-hoy","ia-hoy","tabla-registros"].forEach(function(id){
+        var el=document.getElementById(id); if(el) el.innerHTML="";
+    });
     init();
-  } else {
-    var e = document.getElementById("pwd-error");
-    e.textContent = "✕ Contraseña incorrecta";
-    document.getElementById("pwd-input").value = "";
+}
+
+window.addEventListener("load", function() {
     document.getElementById("pwd-input").focus();
-    setTimeout(function() { e.textContent = ""; }, 2500);
+});
+
+// ===== APP =====
+
+// ── LOGIN ──
+
+// ── UTILS ──
+function hoy(){
+  var d=new Date(); d.setHours(0,0,0,0); return d;
+}
+function fechaStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function fechaLegible(str){
+  var p=str.split('-');
+  return p[2]+'/'+p[1]+'/'+p[0];
+}
+function fechaLegibleCorta(str){
+  var p=str.split('-');
+  return p[2]+'/'+p[1];
+}
+function addDias(str,n){
+  var d=new Date(str+'T00:00:00');
+  d.setDate(d.getDate()+n);
+  return fechaStr(d);
+}
+function diasDesdeHoy(str){
+  var d=new Date(str+'T00:00:00');
+  var diff=d-hoy();
+  return Math.round(diff/86400000);
+}
+
+// ── STORAGE ──
+function cargarDatos(){
+  try{return JSON.parse(localStorage.getItem(DB_KEY))||[];}catch(e){return [];}
+}
+function guardarDatos(arr){
+  localStorage.setItem(DB_KEY,JSON.stringify(arr));
+}
+
+// ── TABS ──
+function showTab(name,el){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='grilla') renderGrilla();
+  if(name==='registrar') renderTabla();
+}
+
+// ── INIT ──
+
+// ── ALERTAS HOY ──
+function renderAlertas(){
+  var datos=cargarDatos();
+  var strHoy=fechaStr(hoy());
+
+  // repeticiones hoy
+  var reps=datos.filter(r=>r.rep===strHoy);
+  var elRep=document.getElementById('alertas-hoy');
+  if(reps.length===0){
+    elRep.innerHTML='<span class="alerta-empty">Ninguna vaca repite hoy 👍</span>';
+  } else {
+    elRep.innerHTML=reps.map(r=>'<div class="alerta-chip">🔴 Caravana <strong style="margin-left:4px">'+r.caravana+'</strong><span class="chip-fecha">IA el '+fechaLegible(r.fecha)+'</span></div>').join('');
+  }
+  // badge
+  var badge=document.getElementById('badge-alerta');
+  if(reps.length>0){badge.textContent=reps.length;badge.style.display='inline-flex';}
+  else badge.style.display='none';
+
+  // IA hoy
+  var iaHoy=datos.filter(r=>r.fecha===strHoy);
+  var elIA=document.getElementById('ia-hoy');
+  if(iaHoy.length===0){
+    elIA.innerHTML='<span class="alerta-empty">No hay inseminaciones registradas hoy</span>';
+  } else {
+    elIA.innerHTML=iaHoy.map(r=>'<div class="alerta-chip" style="background:#001a3a;border-color:#1E88E5;color:#90CAF9;">🔵 Caravana <strong style="margin-left:4px">'+r.caravana+'</strong><span class="chip-fecha">'+(r.tipo==='sex'?'Semen sexado':'Convencional')+'</span></div>').join('');
   }
 }
-window.addEventListener("load", function() { document.getElementById("pwd-input").focus(); });
 
-var N_FILAS = 50;
-var alarmasActivas = [];
-var alarmaInterval = null;
-var audioCtx = null;
-var notifTimeout = null;
+// ── GRILLA 21 DIAS ──
+function renderGrilla(){
+  var datos=cargarDatos();
+  var el=document.getElementById('grid-21');
+  var strHoy=fechaStr(hoy());
+  var html='';
 
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
+  for(var i=0;i<21;i++){
+    var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+i);
+    var str=fechaStr(d);
+    var esHoy=str===strHoy;
+    var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    var meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+    var iaEste=datos.filter(r=>r.fecha===str);
+    var repEste=datos.filter(r=>r.rep===str);
+
+    var tagsIA=iaEste.map(r=>'<span class="vaca-tag ia">'+r.caravana+'</span>').join('');
+    var tagsRep=repEste.map(r=>'<span class="vaca-tag rep">'+r.caravana+'</span>').join('');
+
+    html+='<div class="dia-card'+(esHoy?' hoy':'')+'">'+
+      '<div class="dia-label">'+dias[d.getDay()]+' '+meses[d.getMonth()]+'</div>'+
+      '<div class="dia-num">'+d.getDate()+'</div>'+
+      '<div class="vacas-ia">'+tagsIA+tagsRep+'</div>'+
+      '</div>';
+  }
+  el.innerHTML=html;
 }
 
-function tocarCampanilla(urgente) {
-  try {
-    var ctx = getAudioCtx();
-    var notas = urgente ? [880, 1046, 1318, 1046, 880] : [1046, 1318, 1568, 1318, 1046];
-    var t = ctx.currentTime;
-    notas.forEach(function(freq, i) {
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0, t + i * 0.18);
-      gain.gain.linearRampToValueAtTime(0.4, t + i * 0.18 + 0.05);
-      gain.gain.linearRampToValueAtTime(0, t + i * 0.18 + 0.25);
-      osc.start(t + i * 0.18);
-      osc.stop(t + i * 0.18 + 0.3);
-    });
-    if (urgente) {
-      setTimeout(function() { tocarCampanilla(false); }, 900);
-    }
-  } catch(e) { console.log("Audio error:", e); }
+// ── REGISTRAR ──
+function registrarIA(){
+  var caravana=document.getElementById('inp-caravana').value.trim();
+  var fecha=document.getElementById('inp-fecha').value;
+  var tipo=document.getElementById('inp-tipo').value;
+  var msg=document.getElementById('msg-ok');
+
+  if(!caravana||caravana.length===0){
+    msg.style.color='var(--rojo-light)';msg.textContent='⚠ Ingresá un número de caravana válido';msg.style.display='block';
+    setTimeout(()=>msg.style.display='none',3000);return;
+  }
+  if(!fecha){
+    msg.style.color='var(--rojo-light)';msg.textContent='⚠ Seleccioná la fecha de IA';msg.style.display='block';
+    setTimeout(()=>msg.style.display='none',3000);return;
+  }
+
+  var datos=cargarDatos();
+  var rep=addDias(fecha,21);
+  datos.push({caravana:caravana.toUpperCase(),fecha:fecha,rep:rep,tipo:tipo,id:Date.now()});
+  guardarDatos(datos);
+
+  msg.style.color='var(--verde)';
+  msg.textContent='✓ Caravana '+caravana+' — IA '+fechaLegible(fecha)+' — Repetición el '+fechaLegible(rep);
+  msg.style.display='block';
+  setTimeout(()=>msg.style.display='none',4000);
+
+  document.getElementById('inp-caravana').value='';
+  document.getElementById('inp-fecha').value=fechaStr(hoy());
+  renderTabla();
+  renderAlertas();
 }
 
-function mostrarNotif(titulo, vaca, sub, urgente) {
-  var box = document.getElementById("notif-box");
-  document.getElementById("notif-titulo").textContent = titulo;
-  document.getElementById("notif-vaca").textContent = "Vaca " + vaca;
-  document.getElementById("notif-sub").textContent = sub;
-  box.className = "notif-box" + (urgente ? "" : " warn");
-  box.style.display = "block";
-  box.style.animation = "slideIn .3s ease";
-  if (notifTimeout) clearTimeout(notifTimeout);
-  notifTimeout = setTimeout(function() { cerrarNotif(); }, 15000);
-}
+// ── TABLA REGISTROS ──
+function renderTabla(){
+  var datos=cargarDatos();
+  var strHoy=fechaStr(hoy());
+  var tbody=document.getElementById('tabla-registros');
 
-function cerrarNotif() {
-  document.getElementById("notif-box").style.display = "none";
-}
+  if(datos.length===0){
+    tbody.innerHTML='<tr><td colspan="6" class="empty-state">No hay inseminaciones registradas</td></tr>';
+    return;
+  }
 
-function iniciarAlarmas(vacas) {
-  if (alarmaInterval) clearInterval(alarmaInterval);
-  alarmasActivas = vacas.map(function(v) {
-    return { vaca: v.vaca, tipo: v.tipo, iaTotal: v.iaTotal, nextday: v.nextday, disp10: false, dispExacta: false };
+  // ordenar por fecha IA desc
+  var sorted=[...datos].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  var html='';
+  sorted.forEach(function(r){
+    var diffRep=diasDesdeHoy(r.rep);
+    var estadoRep='';
+    if(r.rep<strHoy) estadoRep='<span style="font-size:11px;color:var(--texto2)">Venció</span>';
+    else if(r.rep===strHoy) estadoRep='<span class="rep-badge hoy-badge">HOY</span>';
+    else estadoRep='<span style="font-size:12px;color:var(--texto2)">en '+diffRep+' día'+(diffRep===1?'':'s')+'</span>';
+
+    var diaIA=new Date(r.fecha+'T00:00:00');
+    var diasServicio=Math.floor((new Date()-diaIA)/86400000)+'d';
+    var tipoLabel=r.tipo==='sex'?'<span style="color:#AFA9EC;font-size:12px">Sexado</span>':'<span style="color:#90CAF9;font-size:12px">Conv.</span>';
+
+    html+='<tr>'+
+      '<td><span class="caravana-badge">'+r.caravana+'</span></td>'+
+      '<td style="font-family:\'IBM Plex Mono\',monospace">'+fechaLegible(r.fecha)+'</td>'+
+      '<td>'+tipoLabel+'</td>'+
+      '<td><span class="rep-badge">'+fechaLegible(r.rep)+'</span></td>'+
+      '<td>'+estadoRep+'</td>'+
+      '<td style="font-family:\'IBM Plex Mono\',monospace;font-size:14px;font-weight:600;color:var(--amarillo)">'+diasServicio+'</td>'+
+      '<td><button class="btn-danger" onclick="eliminar('+r.id+')">✕</button></td>'+
+      '</tr>';
   });
-  alarmaInterval = setInterval(chequearAlarmas, 20000);
-  chequearAlarmas();
-  document.getElementById("alarma-ind").style.display = "block";
+  tbody.innerHTML=html;
 }
 
-function chequearAlarmas() {
-  var ahora = new Date();
-  var minActual = ahora.getHours() * 60 + ahora.getMinutes();
-  alarmasActivas.forEach(function(a) {
-    if (a.nextday) return;
-    if (!a.disp10 && minActual === a.iaTotal - 10) {
-      a.disp10 = true;
-      tocarCampanilla(false);
-      mostrarNotif("⏰ EN 10 MINUTOS — PREPARAR IA", a.vaca, a.tipo === "sex" ? "Semen Sexado" : "Semen Convencional", false);
+function eliminar(id){
+  if(!confirm('¿Eliminar este registro?')) return;
+  var datos=cargarDatos().filter(r=>r.id!==id);
+  guardarDatos(datos);
+  renderTabla();
+  renderAlertas();
+  renderGrilla();
+}
+
+// ── EXPORTAR ──
+function exportarDatos(){
+  var datos=cargarDatos();
+  if(datos.length===0){alert('No hay datos para exportar.');return;}
+  var json=JSON.stringify(datos,null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var hoy_str=fechaStr(hoy()).replace(/-/g,'');
+  a.href=url;
+  a.download='alerta_celo_'+hoy_str+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── IMPORTAR ──
+function importarDatos(input){
+  var file=input.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var datos=JSON.parse(e.target.result);
+      if(!Array.isArray(datos))throw new Error('Formato inválido');
+      var actuales=cargarDatos();
+      // merge: no duplicar por id
+      var ids=new Set(actuales.map(r=>r.id));
+      var nuevos=datos.filter(r=>!ids.has(r.id));
+      var merged=actuales.concat(nuevos);
+      guardarDatos(merged);
+      renderTabla();
+      renderAlertas();
+      renderGrilla();
+      alert('✓ Importación exitosa — '+nuevos.length+' registro/s nuevos agregados.');
+    }catch(err){
+      alert('⚠ Error al importar: el archivo no es válido.');
     }
-    if (!a.dispExacta && minActual === a.iaTotal) {
-      a.dispExacta = true;
-      tocarCampanilla(true);
-      mostrarNotif("🚨 HORA DE INSEMINAR AHORA", a.vaca, a.tipo === "sex" ? "Semen Sexado" : "Semen Convencional", true);
-    }
-  });
+    input.value='';
+  };
+  reader.readAsText(file);
 }
 
-function fmtHora(h, m) { return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0"); }
-
-function addHrs(totalMins, hrs) {
-  var res = totalMins + hrs * 60;
-  var nextday = res >= 1440;
-  res = ((res % 1440) + 1440) % 1440;
-  return { h: Math.floor(res / 60), m: res % 60, nextday: nextday, total: res };
-}
-
-function getTime(pre, i) {
-  var h = parseInt(document.getElementById(pre + "h_" + i).value);
-  var m = parseInt(document.getElementById(pre + "m_" + i).value);
-  return h * 60 + m;
-}
-
-function makeSelH(id, def) {
-  var o = "";
-  for (var h = 0; h < 24; h++) o += "<option value='" + h + "'" + (h === def ? " selected" : "") + ">" + String(h).padStart(2,"0") + "</option>";
-  return "<select class='sel-h' id='" + id + "' onchange='actualizarFilaById(" + id.split("_").pop() + ")'>" + o + "</select>";
-}
-
-function makeSelM(id) {
-  var o = "";
-  for (var m = 0; m < 60; m += 10) o += "<option value='" + m + "'>" + String(m).padStart(2,"0") + "</option>";
-  return "<select class='sel-h' id='" + id + "' onchange='actualizarFilaById(" + id.split("_").pop() + ")'>" + o + "</select>";
-}
 
 function init() {
-  var d = new Date();
-  var dias = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-  var meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-  document.getElementById("header-fecha").textContent = dias[d.getDay()] + " " + d.getDate() + " de " + meses[d.getMonth()] + " " + d.getFullYear();
-  renderTabla();
+    var d = hoy();
+    var dias = ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'];
+    var meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    document.getElementById('fecha-hoy-header').textContent = dias[d.getDay()] + ' ' + d.getDate() + ' de ' + meses[d.getMonth()] + ' ' + d.getFullYear();
+    document.getElementById('inp-fecha').value = fechaStr(hoy());
+    document.querySelector('.logo').innerHTML = '&#x1F404; ALERTA <span>CELO</span>&nbsp;<span style="font-size:13px;color:#ffd600;letter-spacing:1px;">' + TAMBO_ACTIVO + '</span>';
+    renderAlertas();
+    renderGrilla();
 }
 
-function renderTabla() {
-  var html = "";
-  for (var i = 1; i <= N_FILAS; i++) {
-    html += "<tr id='fila-" + i + "' style='opacity:" + (i <= 10 ? "1" : "0.35") + "'>" +
-      "<td class='row-num'>" + i + "</td>" +
-      "<td><input class='inp-vaca' type='text' id='vaca_" + i + "' placeholder='N° vaca' oninput='activarFila(" + i + ")'></td>" +
-      "<td><div style='display:flex;align-items:center;gap:3px'>" + makeSelH("obs_h_" + i, 8) + "<span style='font-family:IBM Plex Mono,monospace;font-size:18px;color:var(--texto2);padding:0 2px'>:</span>" + makeSelM("obs_m_" + i) + "</div></td>" +
-      "<td><div style='display:flex;align-items:center;gap:3px'>" + makeSelH("qui_h_" + i, 8) + "<span style='font-family:IBM Plex Mono,monospace;font-size:18px;color:var(--texto2);padding:0 2px'>:</span>" + makeSelM("qui_m_" + i) + "</div></td>" +
-      "<td><select class='sel-tipo conv' id='tipo_" + i + "' onchange='colorTipo(" + i + ");actualizarFilaById(" + i + ")'><option value='conv'>Convencional (9 hs)</option><option value='sex'>Sexado (15 hs)</option></select></td>" +
-      "<td><div class='ia-hora empty' id='ia_" + i + "'>—</div></td>" +
-      "</tr>";
-  }
-  document.getElementById("tabla-body").innerHTML = html;
+function limpiarPantalla() {
+    ["grid-21","alertas-hoy","ia-hoy","tabla-registros"].forEach(function(id){
+        var el=document.getElementById(id); if(el) el.innerHTML="";
+    });
 }
-
-function colorTipo(i) {
-  var sel = document.getElementById("tipo_" + i);
-  sel.className = "sel-tipo " + (sel.value === "sex" ? "sex" : "conv");
-}
-
-function activarFila(i) {
-  document.getElementById("fila-" + i).style.opacity = "1";
-  if (i < N_FILAS) document.getElementById("fila-" + (i+1)).style.opacity = "1";
-  actualizarFilaById(i);
-}
-
-function actualizarFilaById(i) {
-  var vaca = document.getElementById("vaca_" + i).value.trim();
-  var iaEl = document.getElementById("ia_" + i);
-  if (!vaca) { iaEl.textContent = "—"; iaEl.className = "ia-hora empty"; return; }
-  var quiMins = getTime("qui_", i);
-  var tipo = document.getElementById("tipo_" + i).value;
-  var hrsIA = tipo === "sex" ? 15 : 9;
-  var res = addHrs(quiMins, hrsIA);
-  iaEl.textContent = fmtHora(res.h, res.m) + (res.nextday ? " +1d" : "");
-  iaEl.className = "ia-hora " + (tipo === "sex" ? "sex" : "conv");
-  colorTipo(i);
-}
-
-function calcularPrograma() {
-  var vacas = [];
-  for (var i = 1; i <= N_FILAS; i++) {
-    var vaca = document.getElementById("vaca_" + i).value.trim();
-    if (!vaca) continue;
-    var obsMins = getTime("obs_", i);
-    var quiMins = getTime("qui_", i);
-    var tipo = document.getElementById("tipo_" + i).value;
-    var hrsIA = tipo === "sex" ? 15 : 9;
-    var res = addHrs(quiMins, hrsIA);
-    vacas.push({ vaca: vaca.toUpperCase(), obs: fmtHora(Math.floor(obsMins/60), obsMins%60), qui: fmtHora(Math.floor(quiMins/60), quiMins%60), tipo: tipo, iaTotal: res.total, iaHora: fmtHora(res.h, res.m), nextday: res.nextday, hrsIA: hrsIA });
-  }
-  if (vacas.length === 0) { alert("No hay vacas cargadas para calcular."); return; }
-  vacas.sort(function(a, b) { return a.iaTotal - b.iaTotal; });
-
-  var nConv = vacas.filter(function(v){ return v.tipo === "conv"; }).length;
-  var nSex  = vacas.filter(function(v){ return v.tipo === "sex"; }).length;
-  var rHtml = "<div class='res-chip'><strong>" + vacas.length + "</strong>Total vacas</div>";
-  if (nConv > 0) rHtml += "<div class='res-chip'><strong style='color:#90CAF9'>" + nConv + "</strong>Convencional</div>";
-  if (nSex  > 0) rHtml += "<div class='res-chip'><strong style='color:#AFA9EC'>" + nSex  + "</strong>Sexado</div>";
-  document.getElementById("resumen").innerHTML = rHtml;
-
-  var html = "";
-  vacas.forEach(function(v) {
-    html += "<div class='prog-item " + v.tipo + "'>" +
-      "<div class='prog-hora " + v.tipo + "'>" + v.iaHora + "</div>" +
-      "<div class='prog-vaca'>Vaca " + v.vaca + "<span>Vista: " + v.obs + " &nbsp;|&nbsp; Quieta: " + v.qui + " &nbsp;|&nbsp; " + v.hrsIA + " hs desde quietud</span></div>" +
-      (v.nextday ? "<div class='prog-nextday'>día siguiente</div>" : "") +
-      "<div class='prog-badge " + v.tipo + "'>" + (v.tipo === "sex" ? "SEXADO" : "CONV.") + "</div>" +
-      "</div>";
-  });
-  document.getElementById("programa-lista").innerHTML = html;
-  document.getElementById("programa-wrap").style.display = "block";
-  document.getElementById("programa-wrap").scrollIntoView({ behavior: "smooth" });
-  iniciarAlarmas(vacas);
-}
-
-function limpiarTodo() {
-  if (!confirm("¿Limpiar todas las vacas cargadas?")) return;
-  if (alarmaInterval) clearInterval(alarmaInterval);
-  alarmasActivas = [];
-  document.getElementById("alarma-ind").style.display = "none";
-  renderTabla();
-  document.getElementById("programa-wrap").style.display = "none";
+function cambiarTambo() {
+    localStorage.removeItem("tambo_activo_n");
+    DB_KEY = "alerta_celo_v1";
+    TAMBO_ACTIVO = "";
+    limpiarPantalla();
+    abrirSelectorTambo();
 }
 </script>
 </body>
