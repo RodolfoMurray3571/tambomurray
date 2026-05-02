@@ -370,39 +370,69 @@ function calcularPrograma() {
   window._vacasPrograma = vacas;
 }
 
-function agregarCalendario(vaca, horaIA, nextday) {
+function pad(n) { return String(n).padStart(2, "0"); }
+
+function fmtICS(d) {
+  return d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) +
+    "T" + pad(d.getHours()) + pad(d.getMinutes()) + "00";
+}
+
+function generarICS(vacas) {
   var hoy = new Date();
-  if (nextday) hoy.setDate(hoy.getDate() + 1);
-  var partes = horaIA.split(":");
-  var h = parseInt(partes[0]);
-  var m = parseInt(partes[1]);
+  var lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Tambo Murray//Programa IA//ES",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH"
+  ];
 
-  // Fecha inicio IA
-  var inicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), h, m, 0);
-  var fin = new Date(inicio.getTime() + 30 * 60000); // 30 min duración
+  vacas.forEach(function(v) {
+    var dia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    if (v.nextday) dia.setDate(dia.getDate() + 1);
+    var partes = v.iaHora.split(":");
+    var inicio = new Date(dia.getFullYear(), dia.getMonth(), dia.getDate(), parseInt(partes[0]), parseInt(partes[1]), 0);
+    var fin = new Date(inicio.getTime() + 30 * 60000);
+    var uid = "ia-vaca-" + v.vaca + "-" + Date.now() + "@tambomurray";
 
-  // Alarma 10 min antes
-  var alarma = new Date(inicio.getTime() - 10 * 60000);
+    lines.push("BEGIN:VEVENT");
+    lines.push("UID:" + uid);
+    lines.push("DTSTART:" + fmtICS(inicio));
+    lines.push("DTEND:" + fmtICS(fin));
+    lines.push("SUMMARY:IA Vaca " + v.vaca);
+    lines.push("DESCRIPTION:Inseminar vaca " + v.vaca + " - " + (v.tipo === "sex" ? "Semen Sexado" : "Convencional"));
+    lines.push("BEGIN:VALARM");
+    lines.push("TRIGGER:-PT10M");
+    lines.push("ACTION:DISPLAY");
+    lines.push("DESCRIPTION:En 10 minutos - IA Vaca " + v.vaca);
+    lines.push("END:VALARM");
+    lines.push("BEGIN:VALARM");
+    lines.push("TRIGGER:PT0M");
+    lines.push("ACTION:DISPLAY");
+    lines.push("DESCRIPTION:HORA DE INSEMINAR - Vaca " + v.vaca);
+    lines.push("END:VALARM");
+    lines.push("END:VEVENT");
+  });
 
-  function pad(n) { return String(n).padStart(2, "0"); }
-  function fmtCal(d) {
-    return d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) +
-      "T" + pad(d.getHours()) + pad(d.getMinutes()) + "00";
+  lines.push("END:VCALENDAR");
+  return lines.join("\r\n");
+}
+
+function agregarCalendario(vaca, horaIA, nextday) {
+  var v = { vaca: vaca, iaHora: horaIA, nextday: nextday, tipo: "conv" };
+  // buscar tipo real
+  if (window._vacasPrograma) {
+    var found = window._vacasPrograma.find(function(x){ return x.vaca === vaca; });
+    if (found) v.tipo = found.tipo;
   }
-
-  var titulo = encodeURIComponent("IA Vaca " + vaca);
-  var desc = encodeURIComponent("Inseminar vaca " + vaca + " a las " + horaIA);
-  var fechaInicio = fmtCal(inicio);
-  var fechaFin = fmtCal(fin);
-
-  // Intentar Google Calendar (funciona en Android e iPhone)
-  var url = "https://calendar.google.com/calendar/render?action=TEMPLATE" +
-    "&text=" + titulo +
-    "&dates=" + fechaInicio + "/" + fechaFin +
-    "&details=" + desc +
-    "&sf=true&output=xml";
-
-  window.open(url, "_blank");
+  var ics = generarICS([v]);
+  var blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "IA_vaca_" + vaca + ".ics";
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function agregarTodasCalendario() {
@@ -410,12 +440,14 @@ function agregarTodasCalendario() {
     alert("No hay vacas para agregar.");
     return;
   }
-  if (!confirm("Se van a abrir " + window._vacasPrograma.length + " pestañas, una por cada vaca. ¿Continuar?")) return;
-  window._vacasPrograma.forEach(function(v, i) {
-    setTimeout(function() {
-      agregarCalendario(v.vaca, v.iaHora, v.nextday);
-    }, i * 800);
-  });
+  var ics = generarICS(window._vacasPrograma);
+  var blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "programa_IA_" + new Date().toISOString().slice(0,10) + ".ics";
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function limpiarTodo() {
