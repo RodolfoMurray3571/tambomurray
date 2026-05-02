@@ -147,7 +147,7 @@
     <div class="card-header" style="background:var(--panel);border:1px solid var(--borde);border-radius:12px 12px 0 0;">
       <div class="card-titulo" style="color:var(--verde);">PROGRAMA — ORDENADO POR HORA</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="agregarTodasCalendario()" style="background:#1a1600;border:1px solid #ffd600;color:#ffd600;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:9px 16px;border-radius:8px;cursor:pointer;">📅 TODAS AL CALENDARIO</button>
+        <button onclick="verAlarmas()" style="background:#1a1600;border:1px solid #ffd600;color:#ffd600;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:9px 16px;border-radius:8px;cursor:pointer;">⏰ VER ALARMAS</button>
         <button class="btn-print" onclick="window.print()">🖨 IMPRIMIR</button>
       </div>
     </div>
@@ -352,8 +352,7 @@ function calcularPrograma() {
 
   var html = "";
   vacas.forEach(function(v) {
-    var calBtn = "<button onclick='agregarCalendario(" + JSON.stringify(v.vaca) + "," + JSON.stringify(v.iaHora) + "," + v.nextday + ")' " +
-      "style='background:#1a1600;border:1px solid #ffd600;color:#ffd600;font-family:Bebas Neue,sans-serif;font-size:11px;letter-spacing:1px;padding:5px 10px;border-radius:6px;cursor:pointer;flex-shrink:0;'>📅 CALENDARIO</button>";
+    var calBtn = "";
     html += "<div class='prog-item " + v.tipo + "'>" +
       "<div class='prog-hora " + v.tipo + "'>" + v.iaHora + "</div>" +
       "<div class='prog-vaca'>Vaca " + v.vaca + "<span>Vista: " + v.obs + " &nbsp;|&nbsp; Quieta: " + v.qui + " &nbsp;|&nbsp; " + v.hrsIA + " hs desde quietud</span></div>" +
@@ -450,6 +449,48 @@ function agregarTodasCalendario() {
   URL.revokeObjectURL(url);
 }
 
+// ── PANEL DE ALARMAS ──
+function verAlarmas() {
+  if (!window._vacasPrograma || window._vacasPrograma.length === 0) {
+    alert("No hay vacas cargadas."); return;
+  }
+  var modal = document.getElementById("modal-alarmas");
+  var lista = document.getElementById("alarmas-lista");
+  var html = "";
+  window._vacasPrograma.forEach(function(v) {
+    var partes = v.iaHora.split(":");
+    var h = parseInt(partes[0]);
+    var m = parseInt(partes[1]);
+    var totalMins = h * 60 + m;
+    var avisoMins = totalMins - 10;
+    if (avisoMins < 0) avisoMins += 1440;
+    var ah = Math.floor(avisoMins / 60);
+    var am = avisoMins % 60;
+    var horaAviso = String(ah).padStart(2,"0") + ":" + String(am).padStart(2,"0");
+    var nextTag = v.nextday ? " <span style='font-size:10px;color:#ffd600;'>(día sig.)</span>" : "";
+    html += "<div style='display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #1c2128;gap:12px;flex-wrap:wrap;'>" +
+      "<div>" +
+        "<div style='font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:1px;color:#e6edf3;'>Vaca " + v.vaca + "</div>" +
+        "<div style='font-size:11px;color:#8b949e;margin-top:2px;'>" + (v.tipo === "sex" ? "Semen Sexado" : "Convencional") + "</div>" +
+      "</div>" +
+      "<div style='text-align:center;'>" +
+        "<div style='font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;'>Aviso (10 min antes)</div>" +
+        "<div style='font-family:IBM Plex Mono,monospace;font-size:20px;font-weight:600;color:#ffd600;'>" + horaAviso + nextTag + "</div>" +
+      "</div>" +
+      "<div style='text-align:center;'>" +
+        "<div style='font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;'>Hora IA</div>" +
+        "<div style='font-family:IBM Plex Mono,monospace;font-size:20px;font-weight:600;color:#00c853;'>" + v.iaHora + nextTag + "</div>" +
+      "</div>" +
+    "</div>";
+  });
+  lista.innerHTML = html;
+  modal.style.display = "flex";
+}
+
+function cerrarModalAlarmas() {
+  document.getElementById("modal-alarmas").style.display = "none";
+}
+
 function limpiarTodo() {
   if (!confirm("¿Limpiar todas las vacas cargadas?")) return;
   if (alarmaInterval) clearInterval(alarmaInterval);
@@ -459,5 +500,24 @@ function limpiarTodo() {
   document.getElementById("programa-wrap").style.display = "none";
 }
 </script>
+
+<!-- MODAL ALARMAS -->
+<div id="modal-alarmas" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:9000;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;">
+    <div style="padding:16px 20px;border-bottom:1px solid #30363d;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#161b22;z-index:1;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;color:#ffd600;">⏰ CARGAR ALARMAS EN EL RELOJ</div>
+      <button onclick="cerrarModalAlarmas()" style="background:none;border:none;color:#8b949e;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:4px 20px 8px;background:#1a1600;border-bottom:1px solid #30363d;">
+      <div style="font-size:12px;color:#ffd600;padding:8px 0;line-height:1.5;">
+        Abrí el <strong>Reloj</strong> del celular → <strong>Alarmas</strong> → <strong>+</strong> y cargá cada horario de aviso y de IA.
+      </div>
+    </div>
+    <div id="alarmas-lista" style="padding:0 20px;"></div>
+    <div style="padding:16px 20px;border-top:1px solid #30363d;text-align:center;">
+      <button onclick="cerrarModalAlarmas()" style="background:#003a1a;border:1px solid #00c853;color:#00c853;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:10px 32px;border-radius:8px;cursor:pointer;">LISTO</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
