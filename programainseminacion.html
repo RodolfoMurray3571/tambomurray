@@ -148,6 +148,7 @@
       <div class="card-titulo" style="color:var(--verde);">PROGRAMA — ORDENADO POR HORA</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button onclick="verAlarmas()" style="background:#1a1600;border:1px solid #ffd600;color:#ffd600;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:9px 16px;border-radius:8px;cursor:pointer;">⏰ VER ALARMAS</button>
+        <button onclick="compartirWhatsApp()" style="background:#0a2e14;border:1px solid #25D366;color:#25D366;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:9px 16px;border-radius:8px;cursor:pointer;">📲 WHATSAPP</button>
         <button class="btn-print" onclick="window.print()">🖨 IMPRIMIR</button>
       </div>
     </div>
@@ -489,6 +490,42 @@ function verAlarmas() {
 
 function cerrarModalAlarmas() {
   document.getElementById("modal-alarmas").style.display = "none";
+}
+
+function compartirWhatsApp() {
+  if (!window._vacasPrograma || window._vacasPrograma.length === 0) {
+    alert("No hay vacas cargadas."); return;
+  }
+  var hoy = new Date();
+  var dias = ["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sabado"];
+  var meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  var fechaStr = dias[hoy.getDay()] + " " + hoy.getDate() + " de " + meses[hoy.getMonth()];
+  var nl = "%0A";
+  var msg = "🐄 PROGRAMA IA - " + fechaStr + nl;
+  msg += "━━━━━━━━━━━━━━━━━━" + nl;
+  window._vacasPrograma.forEach(function(v) {
+    var partes = v.iaHora.split(":");
+    var h = parseInt(partes[0]);
+    var m = parseInt(partes[1]);
+    var avisoMins = h * 60 + m - 10;
+    if (avisoMins < 0) avisoMins += 1440;
+    var ah = Math.floor(avisoMins / 60);
+    var am = avisoMins % 60;
+    var horaAviso = String(ah).padStart(2,"0") + ":" + String(am).padStart(2,"0");
+    var nextTag = v.nextday ? " (dia sig.)" : "";
+    var tipoTag = v.tipo === "sex" ? " [SEXADO]" : "";
+    msg += "🔵 Vaca " + v.vaca + tipoTag + nl;
+    msg += "   Aviso: " + horaAviso + nextTag + nl;
+    msg += "   IA: " + v.iaHora + nextTag + nl;
+  });
+  msg += "━━━━━━━━━━━━━━━━━━" + nl;
+  msg += "Total: " + window._vacasPrograma.length + " vacas";
+  // En celular usa wa.me, en computadora usa web.whatsapp.com
+  var isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+  var url = isMobile
+    ? "https://wa.me/?text=" + msg
+    : "https://web.whatsapp.com/send?text=" + msg;
+  window.open(url, "_blank");
 }
 
 function limpiarTodo() {
