@@ -176,8 +176,8 @@
     <div class="alerta-vacas" id="alertas-hoy"></div>
   </div>
 
-  <!-- Paneles 22-25 días -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:20px;">
+  <!-- Paneles 22-30 días -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;">
     <div class="alerta-hoy" style="border-color:#7B1FA2;background:#120020;margin-bottom:0;">
       <div class="alerta-titulo" style="color:#CE93D8;">🟣 VACAS CON 22 DÍAS DE IA</div>
       <div class="alerta-vacas" id="panel-22"></div>
@@ -193,6 +193,22 @@
     <div class="alerta-hoy" style="border-color:#F57F17;background:#1a1000;margin-bottom:0;">
       <div class="alerta-titulo" style="color:#FFE082;">🟡 VACAS CON 25 DÍAS DE IA</div>
       <div class="alerta-vacas" id="panel-25"></div>
+    </div>
+    <div class="alerta-hoy" style="border-color:#E64A19;background:#1a0a00;margin-bottom:0;">
+      <div class="alerta-titulo" style="color:#FFAB91;">🟠 VACAS CON 26 DÍAS DE IA</div>
+      <div class="alerta-vacas" id="panel-26"></div>
+    </div>
+    <div class="alerta-hoy" style="border-color:#C62828;background:#1a0000;margin-bottom:0;">
+      <div class="alerta-titulo" style="color:#EF9A9A;">🔴 VACAS CON 27 DÍAS DE IA</div>
+      <div class="alerta-vacas" id="panel-27"></div>
+    </div>
+    <div class="alerta-hoy" style="border-color:#6A1B9A;background:#100020;margin-bottom:0;">
+      <div class="alerta-titulo" style="color:#CE93D8;">🔮 VACAS CON 28 DÍAS DE IA</div>
+      <div class="alerta-vacas" id="panel-28"></div>
+    </div>
+    <div class="alerta-hoy" style="border-color:#1565C0;background:#00102a;margin-bottom:0;">
+      <div class="alerta-titulo" style="color:#90CAF9;">🔷 VACAS CON 29 DÍAS DE IA</div>
+      <div class="alerta-vacas" id="panel-29"></div>
     </div>
     <div class="alerta-hoy" style="border-color:#00838F;background:#001a1a;margin-bottom:0;">
       <div class="alerta-titulo" style="color:#80DEEA;">🩵 VACAS CON 30 DÍAS DE IA</div>
@@ -421,9 +437,13 @@ function renderAlertas(){
     23:{bg:'#001a2a',border:'#0288D1',color:'#81D4FA'},
     24:{bg:'#001a00',border:'#2E7D32',color:'#A5D6A7'},
     25:{bg:'#1a1000',border:'#F57F17',color:'#FFE082'},
+    26:{bg:'#1a0a00',border:'#E64A19',color:'#FFAB91'},
+    27:{bg:'#1a0000',border:'#C62828',color:'#EF9A9A'},
+    28:{bg:'#100020',border:'#6A1B9A',color:'#CE93D8'},
+    29:{bg:'#00102a',border:'#1565C0',color:'#90CAF9'},
     30:{bg:'#001a1a',border:'#00838F',color:'#80DEEA'}
   };
-  [22,23,24,25,30].forEach(function(n){
+  [22,23,24,25,26,27,28,29,30].forEach(function(n){
     var strDia=addDias(strHoy,-n); // vacas cuya IA fue hace n días
     var vacas=datos.filter(r=>r.fecha===strDia);
     var el=document.getElementById('panel-'+n);
@@ -645,7 +665,9 @@ function init() {
 }
 
 function limpiarPantalla() {
-    ["grid-21","grid-42","alertas-hoy","ia-hoy","tabla-registros"].forEach(function(id){
+    ["grid-21","grid-42","alertas-hoy","ia-hoy","tabla-registros",
+     "panel-22","panel-23","panel-24","panel-25","panel-26","panel-27","panel-28","panel-29","panel-30"
+    ].forEach(function(id){
         var el=document.getElementById(id); if(el) el.innerHTML="";
     });
 }
